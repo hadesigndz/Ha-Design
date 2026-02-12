@@ -1,0 +1,312 @@
+import { useState, useMemo } from 'react';
+import { useCart } from '../../context/CartContext';
+import { ALGERIA_REGIONS } from '../../utils/algeriaData';
+import { DELIVERY_SERVICES, getWilayaZone } from '../../utils/deliveryPrices';
+import { Button } from '../../components/common/Button';
+import { ShoppingBag, Trash2, MapPin, Truck, Home as HomeIcon, CheckCircle, Wallet, Info, ShieldCheck } from 'lucide-react';
+import { Link } from 'react-router-dom';
+
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { db } from '../../services/firebase/config';
+
+export function Cart() {
+    const { cart, removeFromCart, updateQuantity, cartTotal, clearCart } = useCart();
+    const [step, setStep] = useState(1); // 1: Cart, 2: Checkout Form, 3: Success
+    const [loading, setLoading] = useState(false);
+    const [formData, setFormData] = useState({
+        fullName: '',
+        phone: '',
+        wilaya: '',
+        commune: '',
+        address: '',
+        deliveryType: 'home', // 'home' or 'desk'
+        deliveryService: 'yalidine' // Default
+    });
+
+    const deliveryFee = useMemo(() => {
+        if (!formData.wilaya) return 0;
+        const zone = getWilayaZone(formData.wilaya);
+        const service = DELIVERY_SERVICES[formData.deliveryService];
+        return service.prices[zone][formData.deliveryType] || 0;
+    }, [formData.wilaya, formData.deliveryType, formData.deliveryService]);
+
+    const finalTotal = cartTotal + deliveryFee;
+
+    const handleOrder = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+        try {
+            const orderData = {
+                customer: formData,
+                items: cart.map(item => ({
+                    id: item.id,
+                    name: item.name,
+                    price: item.price,
+                    quantity: item.quantity,
+                    image: item.image
+                })),
+                total: finalTotal,
+                status: 'pending',
+                createdAt: serverTimestamp()
+            };
+
+            await addDoc(collection(db, "orders"), orderData);
+            setStep(3);
+            clearCart();
+        } catch (error) {
+            console.error("Error creating order:", error);
+            alert("Failed to place order. Please try again.");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    if (step === 3) {
+        return (
+            <div className="pt-40 pb-20 text-center container mx-auto px-6">
+                <div className="max-w-md mx-auto bg-white p-12 rounded-[3.5rem] shadow-2xl border border-primary-50">
+                    <div className="w-24 h-24 bg-green-50 text-green-500 rounded-full flex items-center justify-center mx-auto mb-8 shadow-inner">
+                        <CheckCircle size={48} />
+                    </div>
+                    <h2 className="text-3xl font-bold mb-4 text-slate-800">Order Placed!</h2>
+                    <p className="text-slate-500 mb-10 leading-relaxed">
+                        Thank you for your order. We will call you at <span className="text-slate-900 font-bold">{formData.phone}</span> to confirm before shipping via <span className="text-primary-400 font-bold">{DELIVERY_SERVICES[formData.deliveryService].name}</span>.
+                    </p>
+                    <div className="bg-slate-50 p-6 rounded-2xl mb-8 border border-slate-100 italic text-sm text-slate-600">
+                        Payment Mode: <strong>Cash on Delivery (COD)</strong>
+                    </div>
+                    <Link to="/"><Button className="w-full py-4 rounded-2xl">Return to Showroom</Button></Link>
+                </div>
+            </div>
+        );
+    }
+
+    if (cart.length === 0 && step === 1) {
+        return (
+            <div className="pt-40 pb-20 text-center container mx-auto px-6">
+                <div className="w-32 h-32 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-8">
+                    <ShoppingBag size={64} className="text-slate-200" />
+                </div>
+                <h2 className="text-3xl font-bold mb-4">Your Gallery is Empty</h2>
+                <p className="text-slate-500 mb-10">Choose your favorite masterpieces to begin.</p>
+                <Link to="/products"><Button variant="primary" size="lg" className="px-12">Browse Collection</Button></Link>
+            </div>
+        );
+    }
+
+    return (
+        <div className="pt-32 pb-24 bg-slate-50/50 min-h-screen">
+            <div className="container mx-auto px-6 max-w-6xl">
+                <div className="flex items-center justify-center gap-6 mb-16">
+                    <div className="flex flex-col items-center gap-2">
+                        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center font-bold text-lg shadow-sm transition-all ${step >= 1 ? 'bg-primary-400 text-white' : 'bg-slate-200 text-slate-500'}`}>1</div>
+                        <span className="text-xs font-bold uppercase tracking-widest text-slate-400">Cart</span>
+                    </div>
+                    <div className="h-[2px] w-16 bg-slate-200 mt-[-20px]" />
+                    <div className="flex flex-col items-center gap-2">
+                        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center font-bold text-lg shadow-sm transition-all ${step >= 2 ? 'bg-primary-400 text-white' : 'bg-slate-200 text-slate-500'}`}>2</div>
+                        <span className="text-xs font-bold uppercase tracking-widest text-slate-400">Details</span>
+                    </div>
+                </div>
+
+                <div className="grid lg:grid-cols-3 gap-10">
+                    <div className="lg:col-span-2 space-y-8">
+                        {step === 1 ? (
+                            <div className="bg-white p-8 rounded-[3rem] shadow-sm border border-slate-100">
+                                <h1 className="text-3xl font-bold mb-10 flex items-center gap-3">
+                                    <ShoppingBag className="text-primary-400" /> My Selections
+                                </h1>
+                                <div className="space-y-8">
+                                    {cart.map((item) => (
+                                        <div key={item.id} className="group flex flex-col sm:flex-row items-center gap-8 p-4 hover:bg-slate-50 rounded-[2rem] transition-all">
+                                            <div className="w-32 h-32 rounded-2xl overflow-hidden shadow-md">
+                                                <img src={item.image} alt={item.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                                            </div>
+                                            <div className="flex-grow text-center sm:text-left">
+                                                <h3 className="font-bold text-xl text-slate-800 mb-1">{item.name}</h3>
+                                                <p className="text-slate-400 text-sm mb-2">{item.category}</p>
+                                                <p className="text-primary-400 font-black text-lg">{item.price.toLocaleString()} DZD</p>
+                                            </div>
+                                            <div className="flex items-center gap-6 bg-white px-4 py-2 rounded-2xl shadow-sm border border-slate-50">
+                                                <div className="flex items-center gap-4">
+                                                    <button onClick={() => updateQuantity(item.id, item.quantity - 1)} className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-primary-50 text-slate-400 hover:text-primary-400 transition-colors">-</button>
+                                                    <span className="w-6 text-center font-black">{item.quantity}</span>
+                                                    <button onClick={() => updateQuantity(item.id, item.quantity + 1)} className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-primary-50 text-slate-400 hover:text-primary-400 transition-colors">+</button>
+                                                </div>
+                                                <button onClick={() => removeFromCart(item.id)} className="text-slate-300 hover:text-red-500 transition-colors">
+                                                    <Trash2 size={22} />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="space-y-8">
+                                <div className="bg-white p-10 rounded-[3rem] shadow-sm border border-slate-100">
+                                    <h2 className="text-2xl font-bold mb-8 flex items-center gap-3"><MapPin className="text-primary-400" /> Shipping Destination</h2>
+                                    <form className="space-y-6">
+                                        <div className="grid md:grid-cols-2 gap-6">
+                                            <div>
+                                                <label className="block text-sm font-bold text-slate-700 mb-3 ml-1 uppercase tracking-wider">Full Identity</label>
+                                                <input
+                                                    type="text" required value={formData.fullName}
+                                                    onChange={e => setFormData({ ...formData, fullName: e.target.value })}
+                                                    className="w-full px-8 py-4 bg-slate-50 rounded-2xl border-none focus:ring-2 focus:ring-primary-400 focus:bg-white transition-all text-slate-800 shadow-inner"
+                                                    placeholder="Your Name"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-bold text-slate-700 mb-3 ml-1 uppercase tracking-wider">Active Phone</label>
+                                                <input
+                                                    type="tel" required value={formData.phone}
+                                                    onChange={e => setFormData({ ...formData, phone: e.target.value })}
+                                                    className="w-full px-8 py-4 bg-slate-50 rounded-2xl border-none focus:ring-2 focus:ring-primary-400 focus:bg-white transition-all text-slate-800 shadow-inner"
+                                                    placeholder="0X XX XX XX XX"
+                                                />
+                                            </div>
+                                        </div>
+
+                                        <div className="grid md:grid-cols-2 gap-6">
+                                            <div>
+                                                <label className="block text-sm font-bold text-slate-700 mb-3 ml-1 uppercase tracking-wider">Wilaya</label>
+                                                <select
+                                                    required value={formData.wilaya}
+                                                    onChange={e => setFormData({ ...formData, wilaya: e.target.value, commune: '' })}
+                                                    className="w-full px-8 py-4 bg-slate-50 rounded-2xl border-none focus:ring-2 focus:ring-primary-400 focus:bg-white transition-all appearance-none cursor-pointer"
+                                                >
+                                                    <option value="">Select Region</option>
+                                                    {Object.entries(ALGERIA_REGIONS).map(([code, data]) => (
+                                                        <option key={code} value={code}>{code} - {data.name}</option>
+                                                    ))}
+                                                </select>
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-bold text-slate-700 mb-3 ml-1 uppercase tracking-wider">Commune</label>
+                                                <select
+                                                    required value={formData.commune} disabled={!formData.wilaya}
+                                                    onChange={e => setFormData({ ...formData, commune: e.target.value })}
+                                                    className="w-full px-8 py-4 bg-slate-50 rounded-2xl border-none focus:ring-2 focus:ring-primary-400 focus:bg-white transition-all appearance-none cursor-pointer disabled:opacity-50"
+                                                >
+                                                    <option value="">Select Municipality</option>
+                                                    {formData.wilaya && ALGERIA_REGIONS[formData.wilaya].communes.map(c => (
+                                                        <option key={c} value={c}>{c}</option>
+                                                    ))}
+                                                </select>
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <label className="block text-sm font-bold text-slate-700 mb-3 ml-1 uppercase tracking-wider">Precise Address</label>
+                                            <input
+                                                type="text" required value={formData.address}
+                                                onChange={e => setFormData({ ...formData, address: e.target.value })}
+                                                className="w-full px-8 py-4 bg-slate-50 rounded-2xl border-none focus:ring-2 focus:ring-primary-400 focus:bg-white transition-all text-slate-800 shadow-inner"
+                                                placeholder="Street, Building, Flat number..."
+                                            />
+                                        </div>
+                                    </form>
+                                </div>
+
+                                <div className="bg-white p-10 rounded-[3rem] shadow-sm border border-slate-100">
+                                    <h2 className="text-2xl font-bold mb-8 flex items-center gap-3"><Truck className="text-primary-400" /> Logistics Provider</h2>
+
+                                    <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+                                        {Object.entries(DELIVERY_SERVICES).map(([id, service]) => (
+                                            <button
+                                                key={id}
+                                                type="button"
+                                                onClick={() => setFormData({ ...formData, deliveryService: id })}
+                                                className={`p-6 rounded-[2rem] border-2 text-left transition-all relative overflow-hidden ${formData.deliveryService === id ? 'border-primary-400 bg-primary-50 ring-4 ring-primary-50' : 'border-slate-50 hover:border-primary-100 bg-slate-50/30'}`}
+                                            >
+                                                <span className={`block font-bold text-lg mb-1 ${formData.deliveryService === id ? 'text-primary-500' : 'text-slate-700'}`}>{service.name}</span>
+                                                <div className="flex items-center gap-2 text-slate-400 text-xs text-nowrap">
+                                                    <CheckCircle size={14} className={formData.deliveryService === id ? 'text-primary-400' : 'opacity-0'} />
+                                                    Verified Carrier
+                                                </div>
+                                            </button>
+                                        ))}
+                                    </div>
+
+                                    <div className="flex flex-col sm:flex-row gap-4 p-2 bg-slate-50 rounded-[2.2rem]">
+                                        <button
+                                            type="button"
+                                            onClick={() => setFormData({ ...formData, deliveryType: 'home' })}
+                                            className={`flex-1 p-6 rounded-[2rem] flex items-center justify-center gap-4 font-bold transition-all shadow-sm ${formData.deliveryType === 'home' ? 'bg-white text-primary-400 scale-[1.02]' : 'bg-transparent text-slate-400 hover:text-slate-600'}`}
+                                        >
+                                            <div className={`p-3 rounded-xl ${formData.deliveryType === 'home' ? 'bg-primary-50 text-primary-400' : 'bg-slate-100'}`}><HomeIcon size={22} /></div>
+                                            Home Delivery
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => setFormData({ ...formData, deliveryType: 'desk' })}
+                                            className={`flex-1 p-6 rounded-[2rem] flex items-center justify-center gap-4 font-bold transition-all shadow-sm ${formData.deliveryType === 'desk' ? 'bg-white text-primary-400 scale-[1.02]' : 'bg-transparent text-slate-400 hover:text-slate-600'}`}
+                                        >
+                                            <div className={`p-3 rounded-xl ${formData.deliveryType === 'desk' ? 'bg-primary-50 text-primary-400' : 'bg-slate-100'}`}><Info size={22} /></div>
+                                            Pickup Desk
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="lg:col-span-1">
+                        <div className="bg-white p-10 rounded-[3rem] shadow-xl border border-primary-50 sticky top-32 overflow-hidden">
+                            <div className="absolute top-0 right-0 w-32 h-32 bg-primary-50/30 rounded-full blur-3xl -z-10" />
+                            <h2 className="text-2xl font-bold mb-8 tracking-tight">Executive Summary</h2>
+
+                            <div className="space-y-6 mb-10 text-slate-600">
+                                <div className="flex justify-between items-center text-lg">
+                                    <span className="font-medium">Gallery Total</span>
+                                    <span className="font-bold text-slate-900 tracking-tight">{cartTotal.toLocaleString()} DZD</span>
+                                </div>
+
+                                {step === 2 && (
+                                    <div className="flex justify-between items-start animate-fade-in py-6 border-y border-slate-50">
+                                        <div className="flex flex-col gap-1">
+                                            <span className="font-medium">Shipping Fee</span>
+                                            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 bg-slate-50 px-2 py-1 rounded-md">
+                                                {DELIVERY_SERVICES[formData.deliveryService].name}
+                                            </span>
+                                        </div>
+                                        <span className="font-bold text-primary-400">+{deliveryFee.toLocaleString()} DZD</span>
+                                    </div>
+                                )}
+
+                                <div className="flex justify-between items-center pt-4">
+                                    <div className="flex flex-col">
+                                        <span className="text-sm font-bold uppercase tracking-[0.2em] text-slate-400">Total Payable</span>
+                                        <span className="text-4xl font-black text-slate-900 tracking-tighter mt-1">
+                                            {finalTotal.toLocaleString()} <span className="text-xl font-bold">DZD</span>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {step === 1 ? (
+                                <Button onClick={() => setStep(2)} className="w-full py-5 text-xl font-black shadow-2xl shadow-primary-200 rounded-[1.5rem] group">
+                                    Confirm Selection
+                                </Button>
+                            ) : (
+                                <div className="space-y-4">
+                                    <Button onClick={handleOrder} className="w-full py-5 text-xl font-black shadow-2xl shadow-primary-200 rounded-[1.5rem] flex items-center justify-center gap-3">
+                                        <Wallet size={24} /> Order with COD
+                                    </Button>
+                                    <button onClick={() => setStep(1)} className="w-full py-4 text-slate-400 text-sm font-bold uppercase tracking-widest hover:text-primary-400 transition-colors">
+                                        Back to Selection
+                                    </button>
+                                </div>
+                            )}
+
+                            <div className="mt-8 flex items-center gap-4 p-5 bg-slate-50 rounded-2xl text-[11px] text-slate-500 border border-slate-100 leading-relaxed">
+                                <ShieldCheck size={20} className="text-primary-400 shrink-0" />
+                                <span>Payment is made via <strong>Cash on Delivery (COD)</strong> upon receipt of your package.</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+}
