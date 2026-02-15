@@ -34,6 +34,7 @@ export function Cart() {
         e.preventDefault();
         setLoading(true);
         try {
+            console.log("1. Starting Order Submission Process...");
             const orderData = {
                 customer: formData,
                 items: cart.map(item => ({
@@ -49,31 +50,42 @@ export function Cart() {
             };
 
             // 1. Save to Firebase
+            console.log("2. Saving to Firestore...");
             const orderRef = await addDoc(collection(db, "orders"), orderData);
+            console.log("3. Firestore Saved. Order ID:", orderRef.id);
 
             // 2. Sync with GoLivri (Wait for tracking code)
+            console.log("4. Syncing with Delivery Partner...");
+            const wilayaName = ALGERIA_REGIONS[formData.wilaya]?.name || formData.wilaya;
+
             const deliveryResult = await createGoLivriOrder({
                 fullName: formData.fullName,
                 phone: formData.phone,
                 wilaya: formData.wilaya,
+                wilayaName: wilayaName,
                 commune: formData.commune,
                 address: formData.address,
                 total: finalTotal,
                 items: cart.map(item => ({ name: item.name, quantity: item.quantity }))
             });
 
-            if (deliveryResult && (deliveryResult.code_suivi || deliveryResult.tracking_code)) {
-                const code = deliveryResult.code_suivi || deliveryResult.tracking_code;
+            console.log("5. Delivery Sync Result:", deliveryResult);
+
+            if (deliveryResult && (deliveryResult.code_suivi || deliveryResult.tracking_code || deliveryResult.code)) {
+                const code = deliveryResult.code_suivi || deliveryResult.tracking_code || deliveryResult.code;
+                console.log("6. Tracking Code Found:", code);
                 setTrackingCode(code);
                 // Update order with tracking code
                 await updateDoc(orderRef, { deliveryTracking: code });
+            } else {
+                console.warn("No tracking code returned in API response.");
             }
 
             setStep(3);
             clearCart();
         } catch (error) {
-            console.error("Error creating order:", error);
-            alert("Failed to place order. Please try again.");
+            console.error("CRITICAL ERROR in handleOrder:", error);
+            alert("Failed to place order. Details: " + error.message);
         } finally {
             setLoading(false);
         }
