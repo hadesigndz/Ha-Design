@@ -2,10 +2,10 @@
   command = "npm run build"
   publish = "dist"
 
-# Fixed proxy for ProColis API (Ecotrack)
+# Standard ProColis/Ecotrack Proxy
 [[redirects]]
-  from = "/api/delivery/create"
-  to = "https://procolis.com/api_v1/api_create"
+  from = "/api-v1-sync/*"
+  to = "https://procolis.com/api_v1/:splat"
   status = 200
   force = true
 

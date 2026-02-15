@@ -1,16 +1,14 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
-// https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
   server: {
-    // Proxy API requests to avoid CORS during development
     proxy: {
-      '/api/delivery/create': {
-        target: 'https://procolis.com/api_v1/api_create',
+      '/api-v1-sync': {
+        target: 'https://procolis.com/api_v1',
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api\/delivery\/create/, ''),
+        rewrite: (path) => path.replace(/^\/api-v1-sync/, ''),
       }
     }
   },
@@ -24,10 +22,6 @@ export default defineConfig({
         }
       }
     },
-    sourcemap: false,
     chunkSizeWarningLimit: 600,
-  },
-  optimizeDeps: {
-    include: ['react', 'react-dom', 'react-router-dom', 'firebase/app', 'firebase/firestore', 'firebase/auth']
   }
 })

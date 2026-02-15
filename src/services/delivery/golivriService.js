@@ -1,47 +1,52 @@
 import { ALGERIA_REGIONS } from '../../utils/algeriaData';
 
-// Standardized Proxy Path (Resolved to root to avoid 404s on subpages)
-const API_ENDPOINT = '/api/delivery/create';
+// FIXED PROXY PATH v1.2.2
+const API_PROXY_PREFIX = '/api-v1-sync';
 const API_TOKEN = 'PcUfmcinux7pZGot0Ex6wJYPjWRk7EexgAXeSgqB4JXxJthGX9W2Sb1TEOa0';
 
-/**
- * Creates an order in the ProColis/Ecotrack system.
- */
 export async function createGoLivriOrder(orderData) {
-    console.log("%c[Sync v1.2.1] Attempting ProColis Connection...", "color: white; background: #059669; padding: 4px; font-weight: bold;");
+    console.log("%c[Sync v1.2.2] Universal Payload Mode...", "color: white; background: #6366f1; padding: 4px; font-weight: bold;");
 
     try {
         const wilayaCode = orderData.wilaya;
         const wilayaName = orderData.wilayaName || ALGERIA_REGIONS[wilayaCode]?.name || wilayaCode;
+        const cleanAmount = Math.round(orderData.total);
 
-        // Construct Shotgun Payload
+        // SHOTGUN PAYLOAD (Supports ProColis, Ecotrack, and CourierDZ formats)
         const params = new URLSearchParams();
         params.append('api_token', API_TOKEN);
 
-        // Client Info
+        // Client Variations
         params.append('nom_client', orderData.fullName);
-        params.append('telephone', orderData.phone);
-        params.append('adresse', `${orderData.address}, ${orderData.commune}`);
+        params.append('client', orderData.fullName);
+        params.append('nom', orderData.fullName);
 
-        // Region Info
+        // Phone Variations
+        params.append('telephone', orderData.phone);
+        params.append('telephone_1', orderData.phone);
+        params.append('phone', orderData.phone);
+
+        // Address & Geography
+        params.append('adresse', `${orderData.address}, ${orderData.commune}`);
         params.append('code_wilaya', wilayaCode);
         params.append('wilaya', wilayaName);
         params.append('commune', orderData.commune);
 
         // Order Info
-        params.append('montant', Math.round(orderData.total)); // Ensure integer
+        params.append('montant', cleanAmount.toString());
+        params.append('total', cleanAmount.toString());
         params.append('produit', orderData.items.map(i => `${i.name} x${i.quantity}`).join(', '));
         params.append('reference', orderData.orderId || `HA-${Date.now()}`);
 
-        // Service Flags
-        params.append('type', '1'); // Standard Delivery
+        // Settings
+        params.append('type', '1'); // Delivery
         params.append('stop_desk', '0'); // Home
-        params.append('prepared_by', 'Ha-Design App');
+        params.append('nb_colis', '1');
 
-        // Use absolute path from window origin to prevent 404 on /admin
-        const fetchUrl = `${window.location.origin}${API_ENDPOINT}`;
+        // FORCE ROOT PATH
+        const fetchUrl = `${window.location.origin}${API_PROXY_PREFIX}/api_create`;
 
-        console.log("📤 Sending Payload to:", fetchUrl);
+        console.log("📤 POSTing to:", fetchUrl);
 
         const response = await fetch(fetchUrl, {
             method: 'POST',
@@ -53,18 +58,16 @@ export async function createGoLivriOrder(orderData) {
         });
 
         const rawText = await response.text();
-        console.log("📥 Raw Response:", rawText);
+        console.log("📥 Raw API Output:", rawText);
 
-        if (!response.ok) {
-            throw new Error(`Server returned ${response.status}: ${rawText}`);
-        }
+        if (!response.ok) throw new Error(`HTTP ${response.status}: ${rawText}`);
 
         const result = JSON.parse(rawText);
         console.log("✅ Sync Result:", result);
         return result;
 
     } catch (error) {
-        console.error("❌ Sync Failed:", error);
+        console.error("❌ Sync Fatal:", error);
         return { success: false, error: error.message };
     }
 }
