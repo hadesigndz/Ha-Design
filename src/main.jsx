@@ -3,21 +3,36 @@ import ReactDOM from 'react-dom/client'
 import './index.css'
 import App from './App.jsx'
 
-// Suppress ResizeObserver loop limit exceeded and message channel closed errors
+// Suppress specific non-critical errors often caused by browser extensions
+const IGNORED_ERRORS = [
+  'ResizeObserver loop limit exceeded',
+  'ResizeObserver loop completed with undelivered notifications',
+  'message channel closed',
+  'A listener indicated an asynchronous response'
+];
+
+const shouldIgnore = (msg) => {
+  return typeof msg === 'string' && IGNORED_ERRORS.some(err => msg.includes(err));
+};
+
 const originalError = console.error;
 console.error = (...args) => {
-  if (
-    /Loop limit exceeded/.test(args[0]) ||
-    /message channel closed/.test(args[0])
-  ) {
-    return;
-  }
+  if (args.length > 0 && shouldIgnore(args[0]?.toString())) return;
   originalError(...args);
 };
 
 window.addEventListener('error', (e) => {
-  if (e.message.includes('message channel closed') || e.message.includes('ResizeObserver loop')) {
+  if (shouldIgnore(e.message)) {
     e.stopImmediatePropagation();
+    e.preventDefault();
+  }
+});
+
+window.addEventListener('unhandledrejection', (e) => {
+  const reason = e.reason?.message || e.reason?.toString();
+  if (reason && shouldIgnore(reason)) {
+    e.stopImmediatePropagation();
+    e.preventDefault();
   }
 });
 
