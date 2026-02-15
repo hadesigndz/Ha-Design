@@ -198,26 +198,29 @@ export function Cart() {
                                 </div>
                             </div>
 
-                            <div className="bg-white p-10 rounded-[3rem] shadow-sm border border-slate-100">
-                                <div className="flex items-center gap-3 mb-8">
-                                    <div className="w-10 h-10 rounded-xl bg-primary-50 text-primary-400 flex items-center justify-center">
+                            <div className="bg-white p-5 sm:p-10 rounded-[2rem] sm:rounded-[3rem] shadow-sm border border-slate-100">
+                                <div className="flex items-center gap-3 mb-6 sm:mb-8">
+                                    <div className="w-10 h-10 rounded-xl bg-primary-50 text-primary-400 flex items-center justify-center shrink-0">
                                         <Truck size={20} />
                                     </div>
-                                    <h2 className="text-2xl font-bold">Delivery Method</h2>
+                                    <h2 className="text-xl sm:text-2xl font-bold">Delivery Method</h2>
+                                </div>
+
+                                <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 p-2 bg-slate-50 rounded-[1.5rem] sm:rounded-[2.2rem]">
                                     <button
                                         type="button"
                                         onClick={() => setFormData({ ...formData, deliveryType: 'home' })}
-                                        className={`flex-1 p-6 rounded-[2rem] flex items-center justify-center gap-4 font-bold transition-all shadow-sm ${formData.deliveryType === 'home' ? 'bg-white text-primary-400 scale-[1.02]' : 'bg-transparent text-slate-400 hover:text-slate-600'}`}
+                                        className={`flex-1 p-4 sm:p-6 rounded-[1.2rem] sm:rounded-[2rem] flex items-center justify-center gap-3 sm:gap-4 font-bold transition-all shadow-sm text-sm sm:text-base ${formData.deliveryType === 'home' ? 'bg-white text-primary-400 scale-[1.02]' : 'bg-transparent text-slate-400 hover:text-slate-600'}`}
                                     >
-                                        <div className={`p-3 rounded-xl ${formData.deliveryType === 'home' ? 'bg-primary-50 text-primary-400' : 'bg-slate-100'}`}><HomeIcon size={22} /></div>
+                                        <div className={`p-2 sm:p-3 rounded-xl ${formData.deliveryType === 'home' ? 'bg-primary-50 text-primary-400' : 'bg-slate-100'}`}><HomeIcon size={18} className="sm:w-[22px] sm:h-[22px]" /></div>
                                         Home Delivery
                                     </button>
                                     <button
                                         type="button"
                                         onClick={() => setFormData({ ...formData, deliveryType: 'desk' })}
-                                        className={`flex-1 p-6 rounded-[2rem] flex items-center justify-center gap-4 font-bold transition-all shadow-sm ${formData.deliveryType === 'desk' ? 'bg-white text-primary-400 scale-[1.02]' : 'bg-transparent text-slate-400 hover:text-slate-600'}`}
+                                        className={`flex-1 p-4 sm:p-6 rounded-[1.2rem] sm:rounded-[2rem] flex items-center justify-center gap-3 sm:gap-4 font-bold transition-all shadow-sm text-sm sm:text-base ${formData.deliveryType === 'desk' ? 'bg-white text-primary-400 scale-[1.02]' : 'bg-transparent text-slate-400 hover:text-slate-600'}`}
                                     >
-                                        <div className={`p-3 rounded-xl ${formData.deliveryType === 'desk' ? 'bg-primary-50 text-primary-400' : 'bg-slate-100'}`}><Info size={22} /></div>
+                                        <div className={`p-2 sm:p-3 rounded-xl ${formData.deliveryType === 'desk' ? 'bg-primary-50 text-primary-400' : 'bg-slate-100'}`}><Info size={18} className="sm:w-[22px] sm:h-[22px]" /></div>
                                         Pickup Desk
                                     </button>
                                 </div>
