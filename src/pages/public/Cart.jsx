@@ -10,6 +10,8 @@ import { collection, addDoc, updateDoc, serverTimestamp } from 'firebase/firesto
 import { db } from '../../services/firebase/config';
 import { createGoLivriOrder } from '../../services/delivery/golivriService';
 
+console.log("%c[Ha-Design App v1.0.5 - Sync Enabled]", "color: #fff; background: #2563eb; padding: 4px; border-radius: 4px; font-weight: bold;");
+
 export function Cart() {
     const { cart, removeFromCart, updateQuantity, cartTotal, clearCart } = useCart();
     const [step, setStep] = useState(1); // 1: Cart, 2: Checkout Form, 3: Success
@@ -66,7 +68,8 @@ export function Cart() {
                 commune: formData.commune,
                 address: formData.address,
                 total: finalTotal,
-                items: cart.map(item => ({ name: item.name, quantity: item.quantity }))
+                items: cart.map(item => ({ name: item.name, quantity: item.quantity })),
+                source: window.location.origin
             });
 
             console.log("5. Delivery Sync Result:", deliveryResult);
