@@ -2,9 +2,9 @@
   command = "npm run build"
   publish = "dist"
 
-# Proxy for GoLivri / Ecotrack API to bypass CORS
+# Proxy for GoLivri / ProColis API to bypass CORS
 [[redirects]]
-  from = "/api/ecotrack/*"
+  from = "/procolis-api/*"
   to = "https://procolis.com/api_v1/colis/:splat"
   status = 200
   force = true

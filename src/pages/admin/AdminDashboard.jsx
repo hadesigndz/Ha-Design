@@ -4,6 +4,7 @@ import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { collection, getDocs, addDoc, deleteDoc, doc, updateDoc } from 'firebase/firestore';
 import { auth, db } from '../../services/firebase/config';
 import { uploadImage } from '../../services/cloudinary/cloudinaryService';
+import { createGoLivriOrder } from '../../services/delivery/golivriService';
 import { Button } from '../../components/common/Button';
 import { Plus, Trash2, Edit2, LogOut, Package, ShoppingBag, TrendingUp, Image as ImageIcon, X, LayoutDashboard, Tag, Bell, Settings, Menu, Home, MapPin, Eye, CheckCircle, RotateCcw, Truck, Check } from 'lucide-react';
 
@@ -140,6 +141,41 @@ export function AdminDashboard() {
             fetchOrders();
         } catch (error) {
             console.error("Error updating order status:", error);
+        }
+    };
+
+    const handleManualSync = async (order) => {
+        if (!order.customer) return;
+
+        const confirmSync = window.confirm(`Sync Order #${order.id.slice(-6).toUpperCase()} to GoLivri?`);
+        if (!confirmSync) return;
+
+        try {
+            const result = await createGoLivriOrder({
+                orderId: order.id,
+                fullName: order.customer.fullName,
+                phone: order.customer.phone,
+                wilaya: order.customer.wilaya,
+                commune: order.customer.commune,
+                address: order.customer.address,
+                total: order.total,
+                items: order.items
+            });
+
+            if (result && (result.code_suivi || result.tracking_code || result.code)) {
+                const code = result.code_suivi || result.tracking_code || result.code;
+                await updateDoc(doc(db, "orders", order.id), {
+                    deliveryTracking: code,
+                    status: 'confirmed'
+                });
+                alert(`SUCCESS: Synced with tracking #${code}`);
+                fetchOrders();
+                if (selectedOrder) setSelectedOrder({ ...selectedOrder, deliveryTracking: code, status: 'confirmed' });
+            } else {
+                alert(`FAIL: Sync returned no tracking code. Check console.`);
+            }
+        } catch (err) {
+            alert(`ERROR: ${err.message}`);
         }
     };
 
@@ -442,6 +478,14 @@ export function AdminDashboard() {
                                                                     <RotateCcw size={12} /> Reset
                                                                 </button>
                                                             )}
+                                                            {!order.deliveryTracking && (
+                                                                <button
+                                                                    onClick={() => handleManualSync(order)}
+                                                                    className="flex items-center gap-2 px-4 py-2 bg-primary-50 text-primary-400 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-primary-100 transition-all border border-primary-100"
+                                                                >
+                                                                    <Truck size={12} /> Sync GoLivri
+                                                                </button>
+                                                            )}
                                                         </div>
                                                         <div className="flex items-center gap-3">
                                                             <span className={`
@@ -624,6 +668,14 @@ export function AdminDashboard() {
                                     >
                                         <RotateCcw size={14} /> Reset to Pending
                                     </button>
+                                    {!selectedOrder.deliveryTracking && (
+                                        <button
+                                            onClick={() => handleManualSync(selectedOrder)}
+                                            className="w-full py-3 mt-2 premium-gradient text-white rounded-2xl flex items-center justify-center gap-3 text-xs font-black uppercase tracking-widest shadow-xl shadow-primary-100"
+                                        >
+                                            <Truck size={14} /> Sync to GoLivri
+                                        </button>
+                                    )}
                                 </div>
                             </div>
                         </div>

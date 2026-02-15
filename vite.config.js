@@ -7,10 +7,10 @@ export default defineConfig({
   server: {
     // Proxy API requests to backend / external APIs to avoid CORS during development
     proxy: {
-      '/api/ecotrack': {
+      '/procolis-api': {
         target: 'https://procolis.com/api_v1/colis',
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api\/ecotrack/, ''),
+        rewrite: (path) => path.replace(/^\/procolis-api/, ''),
       }
     }
   },

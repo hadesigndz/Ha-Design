@@ -1,5 +1,5 @@
-# Netlify Proxy for GoLivri/ProColis API to bypass CORS
-/api/ecotrack/*  https://procolis.com/api_v1/colis/:splat  200!
+# Proxy for GoLivri / ProColis API
+/procolis-api/*  https://procolis.com/api_v1/colis/:splat  200!
 
 # SPA Redirection
 /*  /index.html  200
