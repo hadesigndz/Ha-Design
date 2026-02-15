@@ -19,7 +19,7 @@ export function Cart() {
         wilaya: '',
         commune: '',
         address: '',
-        deliveryType: 'home', // 'home' or 'desk'
+        deliveryType: 'home', // Always home delivery
     });
 
     const deliveryFee = useMemo(() => {
@@ -68,7 +68,7 @@ export function Cart() {
                     </div>
                     <h2 className="text-3xl font-bold mb-4 text-slate-800">Order Placed!</h2>
                     <p className="text-slate-500 mb-10 leading-relaxed">
-                        Thank you for your order. We will call you at <span className="text-slate-900 font-bold">{formData.phone}</span> to confirm before shipping via <span className="text-primary-400 font-bold">{formData.deliveryType === 'home' ? 'Home Delivery' : 'Stop Desk Pickup'}</span>.
+                        Thank you for your order. We will call you at <span className="text-slate-900 font-bold">{formData.phone}</span> to confirm before shipping via <span className="text-primary-400 font-bold">Home Delivery</span>.
                     </p>
                     <div className="bg-slate-50 p-6 rounded-2xl mb-8 border border-slate-100 italic text-sm text-slate-600">
                         Payment Mode: <strong>Cash on Delivery (COD)</strong>
@@ -198,33 +198,7 @@ export function Cart() {
                                 </div>
                             </div>
 
-                            <div className="bg-white p-5 sm:p-10 rounded-[2rem] sm:rounded-[3rem] shadow-sm border border-slate-100">
-                                <div className="flex items-center gap-3 mb-6 sm:mb-8">
-                                    <div className="w-10 h-10 rounded-xl bg-primary-50 text-primary-400 flex items-center justify-center shrink-0">
-                                        <Truck size={20} />
-                                    </div>
-                                    <h2 className="text-xl sm:text-2xl font-bold">Delivery Method</h2>
-                                </div>
 
-                                <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 p-2 bg-slate-50 rounded-[1.5rem] sm:rounded-[2.2rem]">
-                                    <button
-                                        type="button"
-                                        onClick={() => setFormData({ ...formData, deliveryType: 'home' })}
-                                        className={`flex-1 p-4 sm:p-6 rounded-[1.2rem] sm:rounded-[2rem] flex items-center justify-center gap-3 sm:gap-4 font-bold transition-all shadow-sm text-sm sm:text-base ${formData.deliveryType === 'home' ? 'bg-white text-primary-400 scale-[1.02]' : 'bg-transparent text-slate-400 hover:text-slate-600'}`}
-                                    >
-                                        <div className={`p-2 sm:p-3 rounded-xl ${formData.deliveryType === 'home' ? 'bg-primary-50 text-primary-400' : 'bg-slate-100'}`}><HomeIcon size={18} className="sm:w-[22px] sm:h-[22px]" /></div>
-                                        Home Delivery
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={() => setFormData({ ...formData, deliveryType: 'desk' })}
-                                        className={`flex-1 p-4 sm:p-6 rounded-[1.2rem] sm:rounded-[2rem] flex items-center justify-center gap-3 sm:gap-4 font-bold transition-all shadow-sm text-sm sm:text-base ${formData.deliveryType === 'desk' ? 'bg-white text-primary-400 scale-[1.02]' : 'bg-transparent text-slate-400 hover:text-slate-600'}`}
-                                    >
-                                        <div className={`p-2 sm:p-3 rounded-xl ${formData.deliveryType === 'desk' ? 'bg-primary-50 text-primary-400' : 'bg-slate-100'}`}><Info size={18} className="sm:w-[22px] sm:h-[22px]" /></div>
-                                        Pickup Desk
-                                    </button>
-                                </div>
-                            </div>
                         </form>
                     </div>
 
@@ -243,7 +217,7 @@ export function Cart() {
                                     <div className="flex flex-col gap-1">
                                         <span className="font-medium">Delivery Fee</span>
                                         <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 bg-slate-50 px-2 py-1 rounded-md">
-                                            {formData.deliveryType === 'home' ? 'Home Delivery' : 'Stop Desk'}
+                                            Home Delivery
                                         </span>
                                     </div>
                                     <span className="font-bold text-primary-400">+{deliveryFee.toLocaleString()} DZD</span>
