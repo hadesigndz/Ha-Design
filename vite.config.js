@@ -5,35 +5,28 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   server: {
-    // Proxy API requests to backend / external APIs to avoid CORS during development
+    // Proxy API requests to avoid CORS during development
     proxy: {
-      '/procolis-api': {
-        target: 'https://procolis.com/api_v1/colis',
+      '/api/delivery/create': {
+        target: 'https://procolis.com/api_v1/colis/api_create',
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/procolis-api/, ''),
+        rewrite: (path) => path.replace(/^\/api\/delivery\/create/, ''),
       }
     }
   },
   build: {
-    // Optimize chunking for faster loading
     rollupOptions: {
       output: {
         manualChunks: {
-          // Separate Firebase into its own chunk
           firebase: ['firebase/app', 'firebase/auth', 'firebase/firestore'],
-          // Separate framer-motion (it's large)
           'framer-motion': ['framer-motion'],
-          // Separate React core
           vendor: ['react', 'react-dom', 'react-router-dom'],
         }
       }
     },
-    // Enable source maps for debugging, disable in production
     sourcemap: false,
-    // Reduce chunk size warning threshold
     chunkSizeWarningLimit: 600,
   },
-  // Optimize dependency pre-bundling
   optimizeDeps: {
     include: ['react', 'react-dom', 'react-router-dom', 'firebase/app', 'firebase/firestore', 'firebase/auth']
   }

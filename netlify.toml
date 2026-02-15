@@ -2,10 +2,10 @@
   command = "npm run build"
   publish = "dist"
 
-# Proxy for GoLivri / ProColis API to bypass CORS
+# Simple fixed proxy for ProColis API to bypass CORS
 [[redirects]]
-  from = "/procolis-api/*"
-  to = "https://procolis.com/api_v1/colis/:splat"
+  from = "/api/delivery/create"
+  to = "https://procolis.com/api_v1/colis/api_create"
   status = 200
   force = true
 

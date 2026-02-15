@@ -1,5 +1,5 @@
-# Proxy for GoLivri / ProColis API
-/procolis-api/*  https://procolis.com/api_v1/colis/:splat  200!
+# Fixed Proxy for ProColis API
+/api/delivery/create  https://procolis.com/api_v1/colis/api_create  200!
 
 # SPA Redirection
 /*  /index.html  200
