@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useCart } from '../../context/CartContext';
 import { ALGERIA_REGIONS } from '../../utils/algeriaData';
-import { DELIVERY_PRICES, getWilayaZone } from '../../utils/deliveryPrices';
+import { getDeliveryPrice } from '../../utils/deliveryPrices';
 import { Button } from '../../components/common/Button';
 import { ShoppingBag, Trash2, MapPin, Truck, Home as HomeIcon, CheckCircle, Wallet, Info, ShieldCheck } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -24,10 +24,8 @@ export function Cart() {
     });
 
     const deliveryFee = useMemo(() => {
-        if (!formData.wilaya) return 0;
-        const zone = getWilayaZone(formData.wilaya);
-        return DELIVERY_PRICES[zone][formData.deliveryType] || 0;
-    }, [formData.wilaya, formData.deliveryType]);
+        return getDeliveryPrice(formData.wilaya);
+    }, [formData.wilaya]);
 
     const finalTotal = cartTotal + deliveryFee;
 

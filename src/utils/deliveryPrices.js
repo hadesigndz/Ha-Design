@@ -1,25 +1,72 @@
-// Single delivery price table (no company selection)
-export const DELIVERY_PRICES = {
-    zone0: { home: 400, desk: 200 },  // Alger
-    zone1: { home: 500, desk: 300 },  // Center-West
-    zone2: { home: 650, desk: 400 },  // Major North
-    zone3: { home: 750, desk: 500 },  // Central Plateaus
-    zone4: { home: 900, desk: 700 },  // Near South
-    zone5: { home: 1100, desk: 850 }, // Far South
+// Specific delivery prices per Wilaya (Home Delivery)
+// Based on GoLivri Tarification provided by user.
+
+export const WILAYA_PRICES = {
+    "01": 1500, // Adrar
+    "02": 850,  // Chlef
+    "03": 950,  // Laghouat
+    "04": 850,  // Oum El Bouaghi
+    "05": 850,  // Batna
+    "06": 850,  // Béjaïa
+    "07": 900,  // Biskra
+    "08": 1200, // Béchar
+    "09": 700,  // Blida
+    "10": 850,  // Bouira
+    "11": 1800, // Tamanrasset
+    "12": 900,  // Tébessa
+    "13": 900,  // Tlemcen
+    "14": 850,  // Tiaret
+    "15": 800,  // Tizi Ouzou
+    "16": 350,  // Alger
+    "17": 950,  // Djelfa
+    "18": 850,  // Jijel
+    "19": 850,  // Sétif
+    "20": 850,  // Saïda
+    "21": 850,  // Skikda
+    "22": 850,  // Sidi Bel Abbès
+    "23": 850,  // Annaba
+    "24": 900,  // Guelma
+    "25": 800,  // Constantine
+    "26": 800,  // Médéa
+    "27": 850,  // Mostaganem
+    "28": 900,  // M'Sila
+    "29": 850,  // Mascara
+    "30": 1000, // Ouargla
+    "31": 850,  // Oran
+    "32": 1050, // El Bayadh
+    "33": 2100, // Illizi
+    "34": 850,  // Bordj Bou Arreridj
+    "35": 700,  // Boumerdès
+    "36": 850,  // El Tarf
+    "37": 1700, // Tindouf
+    "38": 850,  // Tissemsilt
+    "39": 1050, // El Oued
+    "40": 850,  // Khenchela
+    "41": 900,  // Souk Ahras
+    "42": 700,  // Tipaza
+    "43": 850,  // Mila
+    "44": 850,  // Aïn Defla
+    "45": 1200, // Naâma
+    "46": 850,  // Aïn Témouchent
+    "47": 950,  // Ghardaïa
+    "48": 850,  // Relizane
+    "49": 1600, // Timimoun
+    "50": 1500, // Bordj Badji Mokhtar (Default high)
+    "51": 950,  // Ouled Djellal
+    "52": 1300, // Beni Abbes
+    "53": 1900, // In Salah
+    "54": 1900, // In Guezzam (Default high)
+    "55": 1000, // Touggourt
+    "56": 1200, // Djanet (Default high)
+    "57": 1200, // El M'Ghair
+    "58": 1100, // El Meniaa
 };
 
-export const WILAYA_ZONES = {
-    "16": "zone0", // Alger
-    "09": "zone1", "10": "zone1", "26": "zone1", "42": "zone1", "35": "zone1", // Blida, Bouira, Medea, Tipaza, Boumerdes
-    "31": "zone2", "13": "zone2", "27": "zone2", "29": "zone2", "46": "zone2", "48": "zone2", // West
-    "25": "zone2", "19": "zone2", "06": "zone2", "15": "zone2", "18": "zone2", "21": "zone2", "23": "zone2", // East
-    "04": "zone2", "24": "zone2", "34": "zone2", "43": "zone2", // East/Center
-    "17": "zone3", "07": "zone3", "28": "zone3", "14": "zone3", "05": "zone3", "12": "zone3", "39": "zone3", // Plateaus
-    "01": "zone4", "02": "zone4", "03": "zone4", "08": "zone4", "20": "zone4", "22": "zone4", "32": "zone4", "38": "zone4", "40": "zone4", "41": "zone4", "44": "zone4", "45": "zone4", // Mixed
-    "11": "zone5", "33": "zone5", "37": "zone5", "47": "zone5", "49": "zone5", "50": "zone5", "51": "zone5", "52": "zone5", "53": "zone5", "54": "zone5", "55": "zone5", "56": "zone5", "57": "zone5", "58": "zone5", // Saharien
-    "59": "zone3", "60": "zone4", "61": "zone2", "62": "zone3", "63": "zone2", "64": "zone3", "65": "zone3", "66": "zone1", "67": "zone3", "68": "zone3", "69": "zone3" // New Wilayas mapping
+// Helper: Get price, default to 850 if unknown/missing
+export const getDeliveryPrice = (wilayaCode) => {
+    if (!wilayaCode) return 0;
+    return WILAYA_PRICES[wilayaCode] || 850;
 };
 
-export const getWilayaZone = (wilayaCode) => {
-    return WILAYA_ZONES[wilayaCode] || "zone2";
-};
+// Legacy support if needed, but we should switch to direct price
+export const DELIVERY_PRICES = WILAYA_PRICES; 
