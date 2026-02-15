@@ -8,6 +8,7 @@ import { Link } from 'react-router-dom';
 
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../../services/firebase/config';
+import { createGoLivriOrder } from '../../services/delivery/golivriService';
 
 export function Cart() {
     const { cart, removeFromCart, updateQuantity, cartTotal, clearCart } = useCart();
@@ -48,7 +49,21 @@ export function Cart() {
                 createdAt: serverTimestamp()
             };
 
-            await addDoc(collection(db, "orders"), orderData);
+            // 1. Save to Firebase
+            const orderRef = await addDoc(collection(db, "orders"), orderData);
+
+            // 2. Sync with GoLivri (Non-blocking)
+            // We don't await this because we don't want to stop the user if API is down
+            createGoLivriOrder({
+                fullName: formData.fullName,
+                phone: formData.phone,
+                wilaya: formData.wilaya,
+                commune: formData.commune,
+                address: formData.address,
+                total: finalTotal,
+                items: cart.map(item => ({ name: item.name, quantity: item.quantity }))
+            }).catch(err => console.error("Background sync failed", err));
+
             setStep(3);
             clearCart();
         } catch (error) {
