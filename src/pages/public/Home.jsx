@@ -1,128 +1,160 @@
-import { motion } from 'framer-motion';
-import { ArrowRight, Sparkles } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ArrowRight, Sparkles, ShoppingBag, ShoppingCart, CheckCircle2 } from 'lucide-react';
 import { Button } from '../../components/common/Button';
-import { Link } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { HeroCarousel } from '../../components/layout/HeroCarousel';
 import { useEffect, useState } from 'react';
 import { collection, getDocs, limit, query } from 'firebase/firestore';
 import { db } from '../../services/firebase/config';
+import { useCart } from '../../context/CartContext';
 
 export function Home() {
-    const [featured, setFeatured] = useState([]);
+    const [products, setProducts] = useState([]);
+    const [filter, setFilter] = useState('All');
+    const [showAddedToast, setShowAddedToast] = useState(false);
+    const { addToCart } = useCart();
+    const navigate = useNavigate();
+
+    const handleAddToCart = (product) => {
+        addToCart(product);
+        setShowAddedToast(true);
+        setTimeout(() => setShowAddedToast(false), 3000);
+    };
+
+    const handleBuyNow = (product) => {
+        addToCart(product);
+        navigate('/cart');
+    };
 
     useEffect(() => {
-        const fetchFeatured = async () => {
+        const fetchProducts = async () => {
             try {
-                const q = query(collection(db, "products"), limit(3));
+                const q = query(collection(db, "products"), limit(12));
                 const querySnapshot = await getDocs(q);
                 const list = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                setFeatured(list);
+                // Products fetched
+                setProducts(list);
             } catch (error) {
-                console.error("Error fetching featured products:", error);
+                console.error("Error fetching products:", error);
             }
         };
-        fetchFeatured();
+        fetchProducts();
     }, []);
 
     return (
         <div className="pt-0 overflow-x-hidden">
             <HeroCarousel />
 
-            {/* Intro section */}
-            <section className="py-20 md:py-32 bg-[#fef2f2]">
-                <div className="container mx-auto px-6 grid lg:grid-cols-2 gap-16 lg:gap-24 items-center">
-                    <motion.div
-                        initial={{ opacity: 0, y: 30 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ duration: 0.8 }}
-                    >
-                        <div className="inline-flex items-center gap-3 px-6 py-2.5 bg-white rounded-full shadow-sm text-primary-400 text-xs font-black uppercase tracking-[0.2em] mb-8">
+            {/* Product Gallery Section */}
+            <section className="py-24 bg-slate-50/50">
+                <div className="container mx-auto px-6">
+                    <header className="mb-20 text-center max-w-2xl mx-auto">
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true }}
+                            className="inline-flex items-center gap-3 px-6 py-2.5 bg-white rounded-full shadow-sm text-primary-400 text-xs font-black uppercase tracking-[0.2em] mb-8"
+                        >
                             <Sparkles size={16} />
                             <span>Premium Decoration</span>
-                        </div>
-                        <h2 className="text-5xl md:text-7xl font-black tracking-tighter text-slate-900 leading-[1.1] mb-8">
-                            Art That <span className="text-primary-400">Inspires</span> <br className="hidden md:block" /> Your Space
-                        </h2>
-                        <p className="text-xl text-slate-500 mb-12 leading-relaxed max-w-lg font-medium">
-                            Discover a curated collection of modern paintings and artisanal decorations designed to elevate your home aesthetics.
-                        </p>
-                        <Link to="/products">
-                            <Button size="lg" className="px-12 py-6 text-lg font-black gap-3 shadow-2xl shadow-primary-200 rounded-2xl uppercase tracking-widest text-sm">
-                                Explore The Gallery <ArrowRight size={22} />
-                            </Button>
-                        </Link>
-                    </motion.div>
+                        </motion.div>
+                        <h2 className="text-4xl md:text-6xl font-black mb-6 tracking-tighter">Art That <span className="text-primary-400">Inspires</span></h2>
+                        <p className="text-slate-500 text-lg font-medium">Elevate your living spaces with premium paintings and modern decoration solutions.</p>
+                    </header>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 md:gap-10">
-                        {featured.length > 0 ? (
-                            featured.slice(0, 2).map((prod, i) => (
-                                <motion.div
-                                    key={prod.id}
-                                    initial={{ opacity: 0, scale: 0.9 }}
-                                    whileInView={{ opacity: 1, scale: 1 }}
-                                    viewport={{ once: true }}
-                                    transition={{ duration: 0.6, delay: i * 0.2 }}
-                                    className={`group rounded-[3rem] overflow-hidden shadow-2xl bg-white border border-slate-50 ${i === 1 ? 'sm:mt-16' : ''}`}
-                                >
-                                    <div className="h-72 lg:h-80 overflow-hidden">
-                                        <img src={prod.image} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000" />
-                                    </div>
-                                    <div className="p-10">
-                                        <h4 className="font-black text-2xl mb-2 tracking-tight">{prod.name}</h4>
-                                        <p className="text-primary-400 font-black text-xl italic">{prod.price.toLocaleString()} DZD</p>
-                                    </div>
-                                </motion.div>
-                            ))
-                        ) : (
-                            // Fallback Skeleton
-                            [1, 2].map((i) => (
-                                <div key={i} className={`h-96 rounded-[3rem] bg-white border border-slate-100 shadow-xl flex items-center justify-center p-12 text-center text-slate-200 italic font-black ${i === 2 ? 'sm:mt-16' : ''}`}>
-                                    Artist's Canvas Waiting...
-                                </div>
-                            ))
-                        )}
-                    </div>
-                </div>
-            </section>
-
-            {/* Featured Collections */}
-            <section className="py-24 md:py-32 bg-white">
-                <div className="container mx-auto px-6 text-center">
-                    <h2 className="text-4xl md:text-6xl font-black mb-6 tracking-tighter">Curated Collections</h2>
-                    <p className="text-slate-500 mb-20 max-w-2xl mx-auto text-xl font-medium leading-relaxed">Explore our diverse styles from minimal abstracts to vibrant impressionism.</p>
-
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
-                        {[
-                            { name: 'Abstract', img: 'https://images.unsplash.com/photo-1541963463532-d68292c34b19?q=80&w=800' },
-                            { name: 'Landscape', img: 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?q=80&w=800' },
-                            { name: 'Minimalist', img: 'https://images.unsplash.com/photo-1549490349-8643362247b5?q=80&w=800' }
-                        ].map((category, idx) => (
-                            <motion.div
-                                key={category.name}
-                                whileHover={{ y: -15 }}
-                                initial={{ opacity: 0, y: 30 }}
-                                whileInView={{ opacity: 1, y: 0 }}
-                                viewport={{ once: true }}
-                                transition={{ duration: 0.6, delay: idx * 0.1 }}
-                                className="group relative h-[30rem] rounded-[3.5rem] overflow-hidden shadow-2xl border border-slate-50"
+                    {/* Quick Filters */}
+                    <div className="flex justify-center gap-3 mb-16 overflow-x-auto no-scrollbar pb-4">
+                        {['All', 'Abstract', 'Landscape', 'Minimalist', 'Floral'].map((cat) => (
+                            <button
+                                key={cat}
+                                onClick={() => setFilter(cat)}
+                                className={`px-8 py-3.5 rounded-full text-xs font-black uppercase tracking-widest transition-all whitespace-nowrap ${filter === cat ? 'bg-primary-400 text-white shadow-xl shadow-primary-200' : 'bg-white text-slate-400 hover:text-primary-400 shadow-sm'
+                                    }`}
                             >
-                                <img
-                                    src={category.img}
-                                    alt={category.name}
-                                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000"
-                                />
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent flex flex-col justify-end p-12 text-left">
-                                    <h3 className="text-white text-4xl font-black mb-4 tracking-tighter capitalize">{category.name}</h3>
-                                    <Link to="/products" className="text-white/80 hover:text-white flex items-center gap-3 text-xs font-black uppercase tracking-[0.3em] transition-all">
-                                        View Collection <ArrowRight size={20} className="group-hover:translate-x-2 transition-transform" />
-                                    </Link>
-                                </div>
-                            </motion.div>
+                                {cat}
+                            </button>
                         ))}
                     </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                        {products
+                            .filter(p => filter === 'All' || p.category === filter)
+                            .map((product, i) => (
+                                <motion.div
+                                    key={product.id}
+                                    initial={{ opacity: 0, y: 20 }}
+                                    whileInView={{ opacity: 1, y: 0 }}
+                                    viewport={{ once: true, margin: '-50px' }}
+                                    transition={{ duration: 0.3, delay: Math.min(i * 0.05, 0.2) }}
+                                    className="group bg-white rounded-[2.5rem] overflow-hidden shadow-sm hover:shadow-2xl hover:shadow-primary-100/50 transition-all duration-700 border border-slate-100"
+                                >
+                                    <div className="aspect-[4/5] overflow-hidden relative">
+                                        <img
+                                            src={product.image}
+                                            alt={product.name}
+                                            loading="lazy"
+                                            decoding="async"
+                                            className="w-full h-full object-contain p-4 group-hover:scale-105 transition-transform duration-500"
+                                        />
+                                        <div className="absolute top-6 left-6">
+                                            <div className="bg-white/90 backdrop-blur-md px-4 py-1.5 rounded-xl text-[10px] font-black text-slate-900 uppercase tracking-widest shadow-sm">
+                                                {product.category}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="p-8">
+                                        <h3 className="font-black text-xl text-slate-900 tracking-tight leading-tight mb-4 h-14 line-clamp-2">{product.name}</h3>
+                                        <p className="font-black text-primary-400 text-2xl tracking-tighter mb-6">{product.price.toLocaleString()} DZD</p>
+
+                                        <div className="grid grid-cols-2 gap-3 pt-4 border-t border-slate-50">
+                                            <Button
+                                                onClick={() => handleAddToCart(product)}
+                                                variant="secondary"
+                                                className="rounded-xl py-3 px-2 text-[10px] font-black uppercase tracking-widest gap-2 bg-slate-50 border-none hover:bg-slate-100"
+                                            >
+                                                <ShoppingCart size={14} /> Add
+                                            </Button>
+                                            <Button
+                                                onClick={() => handleBuyNow(product)}
+                                                className="rounded-xl py-3 px-2 text-[10px] font-black uppercase tracking-widest gap-2 shadow-lg shadow-primary-100"
+                                            >
+                                                <ShoppingBag size={14} /> Buy Now
+                                            </Button>
+                                        </div>
+                                    </div>
+                                </motion.div>
+                            ))}
+                    </div>
+
+                    <div className="mt-20 text-center">
+                        <Link to="/products">
+                            <Button variant="secondary" className="px-10 py-5 rounded-2xl font-black uppercase tracking-widest text-xs border-2 border-slate-100 hover:border-primary-400 bg-white shadow-sm">
+                                View Full Collection <ArrowRight size={18} className="ml-2" />
+                            </Button>
+                        </Link>
+                    </div>
                 </div>
             </section>
+
+            {/* Success Toast */}
+            <AnimatePresence>
+                {showAddedToast && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 50, scale: 0.9 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.9 }}
+                        className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[100] bg-slate-900 text-white px-8 py-4 rounded-[2rem] shadow-2xl flex items-center gap-4 border border-white/10 backdrop-blur-xl"
+                    >
+                        <div className="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center text-white">
+                            <CheckCircle2 size={18} />
+                        </div>
+                        <div>
+                            <p className="font-black text-xs uppercase tracking-widest">Added to Gallery Bag</p>
+                            <p className="text-[10px] text-slate-400 font-bold italic">Keep exploring or check your cart</p>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 }

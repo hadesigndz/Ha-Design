@@ -5,7 +5,7 @@ import { collection, getDocs, addDoc, deleteDoc, doc, updateDoc } from 'firebase
 import { auth, db } from '../../services/firebase/config';
 import { uploadImage } from '../../services/cloudinary/cloudinaryService';
 import { Button } from '../../components/common/Button';
-import { Plus, Trash2, Edit2, LogOut, Package, ShoppingBag, TrendingUp, Image as ImageIcon, X, LayoutDashboard, Tag, Bell, Settings, Menu, Home, MapPin } from 'lucide-react';
+import { Plus, Trash2, Edit2, LogOut, Package, ShoppingBag, TrendingUp, Image as ImageIcon, X, LayoutDashboard, Tag, Bell, Settings, Menu, Home, MapPin, Eye, CheckCircle, RotateCcw, Truck, Check } from 'lucide-react';
 
 export function AdminDashboard() {
     const [user, setUser] = useState(null);
@@ -14,6 +14,7 @@ export function AdminDashboard() {
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingProduct, setEditingProduct] = useState(null);
+    const [selectedOrder, setSelectedOrder] = useState(null);
     const [activeTab, setActiveTab] = useState('dashboard');
     const [formData, setFormData] = useState({
         name: '',
@@ -374,7 +375,16 @@ export function AdminDashboard() {
                                             <tr key={order.id} className="hover:bg-slate-50/30 transition-colors group">
                                                 <td className="px-8 py-8">
                                                     <div className="space-y-1">
-                                                        <p className="font-black text-slate-900 text-lg">#{order.id.slice(-6).toUpperCase()}</p>
+                                                        <div className="flex items-center gap-3">
+                                                            <p className="font-black text-slate-900 text-lg">#{order.id.slice(-6).toUpperCase()}</p>
+                                                            <button
+                                                                onClick={() => setSelectedOrder(order)}
+                                                                className="p-2 text-primary-400 hover:bg-primary-50 rounded-xl transition-all"
+                                                                title="View All Details"
+                                                            >
+                                                                <Eye size={18} />
+                                                            </button>
+                                                        </div>
                                                         <p className="text-slate-400 text-xs font-bold uppercase tracking-tighter">
                                                             {order.createdAt?.seconds ? new Date(order.createdAt.seconds * 1000).toLocaleDateString() : 'N/A'}
                                                         </p>
@@ -394,36 +404,57 @@ export function AdminDashboard() {
                                                     <div className="flex flex-wrap gap-3">
                                                         {order.items?.map((item, idx) => (
                                                             <div key={idx} className="relative group/img">
-                                                                <img src={item.image} alt="" className="w-12 h-12 rounded-xl object-cover shadow-sm border border-white" />
+                                                                <img src={item.image} alt="" className="w-12 h-12 rounded-xl object-contain bg-slate-50 shadow-sm border border-white p-1" />
                                                                 <span className="absolute -top-2 -right-2 bg-slate-900 text-white text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center border-2 border-white">{item.quantity}</span>
                                                             </div>
                                                         ))}
                                                     </div>
                                                 </td>
-                                                <td className="px-8 py-8 text-right">
-                                                    <div className="flex flex-col items-end gap-4">
-                                                        <select
-                                                            value={order.status}
-                                                            onChange={(e) => updateOrderStatus(order.id, e.target.value)}
-                                                            className={`
-                                                                px-5 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] border-2 transition-all cursor-pointer outline-none
-                                                                ${order.status === 'pending' ? 'bg-amber-50 border-amber-100 text-amber-600' :
-                                                                    order.status === 'confirmed' ? 'bg-blue-50 border-blue-100 text-blue-600' :
-                                                                        order.status === 'shipped' ? 'bg-indigo-50 border-indigo-100 text-indigo-600' :
-                                                                            'bg-green-50 border-green-100 text-green-600'}
-                                                            `}
-                                                        >
-                                                            <option value="pending">Pending</option>
-                                                            <option value="confirmed">Confirmed</option>
-                                                            <option value="shipped">Shipped</option>
-                                                            <option value="delivered">Delivered</option>
-                                                        </select>
-                                                        <button
-                                                            onClick={() => deleteOrder(order.id)}
-                                                            className="text-slate-300 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
-                                                        >
-                                                            <Trash2 size={16} />
-                                                        </button>
+                                                <td className="px-8 py-8">
+                                                    <div className="flex flex-col items-end gap-3">
+                                                        <div className="flex gap-2">
+                                                            {order.status === 'pending' && (
+                                                                <button
+                                                                    onClick={() => updateOrderStatus(order.id, 'confirmed')}
+                                                                    className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-100 transition-all"
+                                                                >
+                                                                    <CheckCircle size={12} /> Confirm
+                                                                </button>
+                                                            )}
+                                                            {(order.status === 'confirmed' || order.status === 'shipped') && (
+                                                                <button
+                                                                    onClick={() => updateOrderStatus(order.id, 'delivered')}
+                                                                    className="flex items-center gap-2 px-4 py-2 bg-green-50 text-green-600 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-green-100 transition-all"
+                                                                >
+                                                                    <Truck size={12} /> Deliver
+                                                                </button>
+                                                            )}
+                                                            {order.status !== 'pending' && (
+                                                                <button
+                                                                    onClick={() => updateOrderStatus(order.id, 'pending')}
+                                                                    className="flex items-center gap-2 px-4 py-2 bg-slate-50 text-slate-400 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-100 transition-all"
+                                                                >
+                                                                    <RotateCcw size={12} /> Reset
+                                                                </button>
+                                                            )}
+                                                        </div>
+                                                        <div className="flex items-center gap-3">
+                                                            <span className={`
+                                                                px-4 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest border
+                                                                ${order.status === 'pending' ? 'bg-amber-50 border-amber-100 text-amber-500' :
+                                                                    order.status === 'confirmed' ? 'bg-blue-50 border-blue-100 text-blue-500' :
+                                                                        order.status === 'shipped' ? 'bg-indigo-50 border-indigo-100 text-indigo-500' :
+                                                                            'bg-green-50 border-green-100 text-green-500'}
+                                                            `}>
+                                                                {order.status}
+                                                            </span>
+                                                            <button
+                                                                onClick={() => deleteOrder(order.id)}
+                                                                className="text-slate-300 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
+                                                            >
+                                                                <Trash2 size={16} />
+                                                            </button>
+                                                        </div>
                                                     </div>
                                                 </td>
                                             </tr>
@@ -528,6 +559,81 @@ export function AdminDashboard() {
                                 {uploading ? 'Imprinting Art...' : editingProduct ? 'Synchronize Updates' : 'Publish to Showroom'}
                             </Button>
                         </form>
+                    </div>
+                </div>
+            )}
+            {/* Order Detail Modal */}
+            {selectedOrder && (
+                <div className="fixed inset-0 z-[110] flex items-center justify-center p-6 bg-black/60 backdrop-blur-md">
+                    <div className="bg-white rounded-[3.5rem] w-full max-w-2xl p-12 shadow-2xl animate-fade-up relative max-h-[90vh] overflow-y-auto">
+                        <button onClick={() => setSelectedOrder(null)} className="absolute top-8 right-8 text-slate-300 hover:text-slate-900 transition-colors">
+                            <X size={32} />
+                        </button>
+
+                        <div className="mb-10 text-center">
+                            <h2 className="text-4xl font-black tracking-tighter text-slate-900 mb-2">Order Details</h2>
+                            <p className="text-primary-400 font-black uppercase tracking-widest text-sm italic">#{selectedOrder.id.toUpperCase()}</p>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-10 mb-12">
+                            <div className="space-y-4">
+                                <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">Customer Details</h4>
+                                <div className="p-6 bg-slate-50 rounded-3xl space-y-2">
+                                    <p className="font-black text-slate-800 text-lg">{selectedOrder.customer.fullName}</p>
+                                    <p className="font-bold text-slate-500">{selectedOrder.customer.phone}</p>
+                                    <div className="pt-4 mt-4 border-t border-slate-200">
+                                        <div className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                                            <MapPin size={12} /> Shipping Address
+                                        </div>
+                                        <p className="font-bold text-slate-700 mt-2">{selectedOrder.customer.wilaya}, {selectedOrder.customer.commune}</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="space-y-4">
+                                <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">Status Control</h4>
+                                <div className="p-6 bg-slate-50 rounded-3xl flex flex-col gap-3">
+                                    <button
+                                        onClick={() => { updateOrderStatus(selectedOrder.id, 'confirmed'); setSelectedOrder({ ...selectedOrder, status: 'confirmed' }); }}
+                                        className={`w-full py-3 rounded-2xl flex items-center justify-center gap-3 text-xs font-black uppercase tracking-widest transition-all ${selectedOrder.status === 'confirmed' ? 'bg-blue-600 text-white shadow-xl shadow-blue-200' : 'bg-white text-blue-600 border border-blue-50 hover:bg-blue-50'}`}
+                                    >
+                                        <CheckCircle size={14} /> Confirm
+                                    </button>
+                                    <button
+                                        onClick={() => { updateOrderStatus(selectedOrder.id, 'delivered'); setSelectedOrder({ ...selectedOrder, status: 'delivered' }); }}
+                                        className={`w-full py-3 rounded-2xl flex items-center justify-center gap-3 text-xs font-black uppercase tracking-widest transition-all ${selectedOrder.status === 'delivered' ? 'bg-green-600 text-white shadow-xl shadow-green-200' : 'bg-white text-green-600 border border-green-50 hover:bg-green-50'}`}
+                                    >
+                                        <Truck size={14} /> Deliver
+                                    </button>
+                                    <button
+                                        onClick={() => { updateOrderStatus(selectedOrder.id, 'pending'); setSelectedOrder({ ...selectedOrder, status: 'pending' }); }}
+                                        className={`w-full py-3 rounded-2xl flex items-center justify-center gap-3 text-xs font-black uppercase tracking-widest transition-all ${selectedOrder.status === 'pending' ? 'bg-slate-800 text-white shadow-xl shadow-slate-200' : 'bg-white text-slate-400 border border-slate-50 hover:bg-slate-50'}`}
+                                    >
+                                        <RotateCcw size={14} /> Reset to Pending
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="space-y-4">
+                            <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">Order Items</h4>
+                            <div className="space-y-4">
+                                {selectedOrder.items.map((item, idx) => (
+                                    <div key={idx} className="flex items-center gap-6 p-4 border border-slate-50 rounded-[2rem] hover:bg-slate-50 transition-colors">
+                                        <img src={item.image} alt="" className="w-20 h-20 rounded-2xl object-contain bg-slate-50 shadow-sm border border-white p-2" />
+                                        <div className="flex-1">
+                                            <p className="font-black text-slate-900 text-lg">{item.name}</p>
+                                            <p className="text-slate-400 font-bold italic text-sm">Qty: {item.quantity}</p>
+                                        </div>
+                                        <p className="font-black text-slate-900 text-xl tracking-tighter">{(item.price * item.quantity).toLocaleString()} DZD</p>
+                                    </div>
+                                ))}
+                            </div>
+                            <div className="mt-8 pt-8 border-t-4 border-double border-slate-100 flex justify-between items-center">
+                                <span className="text-xl font-black text-slate-400 tracking-widest uppercase">Total Amount</span>
+                                <span className="text-4xl font-black text-primary-400 tracking-tighter">{selectedOrder.total?.toLocaleString()} DZD</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
             )}

@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Filter, ShoppingBag, Heart, Search } from 'lucide-react';
+import { Filter, ShoppingBag, Heart, Search, ShoppingCart, CheckCircle2 } from 'lucide-react';
 import { Button } from '../../components/common/Button';
-import { Link } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useCart } from '../../context/CartContext';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../../services/firebase/config';
@@ -13,8 +13,21 @@ export function ProductList() {
     const [filter, setFilter] = useState('All');
     const [search, setSearch] = useState('');
     const { addToCart } = useCart();
+    const navigate = useNavigate();
+
+    const handleBuy = (product) => {
+        addToCart(product);
+        navigate('/cart');
+    };
 
     const categories = ['All', 'Abstract', 'Landscape', 'Minimalist', 'Floral'];
+    const [showAddedToast, setShowAddedToast] = useState(false);
+
+    const handleAddToCart = (product) => {
+        addToCart(product);
+        setShowAddedToast(true);
+        setTimeout(() => setShowAddedToast(false), 3000);
+    };
 
     useEffect(() => {
         const fetchProducts = async () => {
@@ -83,14 +96,16 @@ export function ProductList() {
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 exit={{ opacity: 0, scale: 0.9 }}
-                                transition={{ duration: 0.5 }}
+                                transition={{ duration: 0.3 }}
                                 className="group bg-white rounded-[3rem] overflow-hidden shadow-sm hover:shadow-2xl hover:shadow-primary-100/50 transition-all duration-700 border border-slate-50"
                             >
-                                <div className="aspect-[3/4] overflow-hidden relative">
+                                <div className="aspect-[3/4] overflow-hidden relative bg-slate-50">
                                     <img
                                         src={product.image}
                                         alt={product.name}
-                                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000"
+                                        loading="lazy"
+                                        decoding="async"
+                                        className="w-full h-full object-contain p-6 group-hover:scale-105 transition-transform duration-500"
                                     />
 
                                     {/* Badges */}
@@ -112,8 +127,8 @@ export function ProductList() {
                                     </div>
 
                                     <div className="absolute bottom-8 left-8 right-8 translate-y-32 group-hover:translate-y-0 transition-all duration-700 ease-out">
-                                        <Button onClick={() => addToCart(product)} className="w-full py-5 gap-3 shadow-2xl shadow-primary-400/40 rounded-2xl">
-                                            <ShoppingBag size={20} /> Add to Cart
+                                        <Button onClick={() => handleBuy(product)} className="w-full py-5 gap-3 shadow-2xl shadow-primary-400/40 rounded-2xl">
+                                            <ShoppingBag size={20} /> Order Now
                                         </Button>
                                     </div>
                                 </div>
@@ -130,9 +145,21 @@ export function ProductList() {
                                         )}
                                     </div>
 
-                                    <Link to={`/product/${product.id}`} className="mt-8 flex items-center justify-center gap-2 w-full py-4 border-2 border-slate-50 rounded-2xl text-slate-400 font-black text-xs uppercase tracking-widest hover:bg-slate-50 hover:text-slate-900 transition-all">
-                                        View Details
-                                    </Link>
+                                    <div className="grid grid-cols-2 gap-4 mt-8">
+                                        <Button
+                                            onClick={() => handleAddToCart(product)}
+                                            variant="secondary"
+                                            className="w-full py-4 rounded-2xl font-black text-xs uppercase tracking-widest gap-2 bg-slate-50 border-none hover:bg-slate-100"
+                                        >
+                                            <ShoppingCart size={16} /> Add
+                                        </Button>
+                                        <Button
+                                            onClick={() => handleBuy(product)}
+                                            className="w-full py-4 rounded-2xl font-black text-xs uppercase tracking-widest gap-2 shadow-xl shadow-primary-100"
+                                        >
+                                            <ShoppingBag size={16} /> Order
+                                        </Button>
+                                    </div>
                                 </div>
                             </motion.div>
                         ))}
@@ -148,6 +175,26 @@ export function ProductList() {
                     </div>
                 )}
             </div>
+
+            {/* Success Toast */}
+            <AnimatePresence>
+                {showAddedToast && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 50, scale: 0.9 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.9 }}
+                        className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[100] bg-slate-900 text-white px-8 py-4 rounded-[2rem] shadow-2xl flex items-center gap-4 border border-white/10 backdrop-blur-xl"
+                    >
+                        <div className="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center text-white">
+                            <CheckCircle2 size={18} />
+                        </div>
+                        <div>
+                            <p className="font-black text-xs uppercase tracking-widest">Added to Bag</p>
+                            <p className="text-[10px] text-slate-400 font-bold italic">Keep shopping or view cart</p>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 }

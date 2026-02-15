@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { ShoppingBag, ArrowLeft, Heart, Share2, Info, Check } from 'lucide-react';
+import { useNavigate, useParams, Link } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ShoppingBag, ArrowLeft, Heart, Share2, Info, Check, ShoppingCart, CheckCircle2 } from 'lucide-react';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../../services/firebase/config';
 import { Button } from '../../components/common/Button';
@@ -12,9 +12,10 @@ import { useCart } from '../../context/CartContext';
 export function ProductDetail() {
     const { id } = useParams();
     const { addToCart } = useCart();
+    const navigate = useNavigate();
     const [product, setProduct] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [added, setAdded] = useState(false);
+    const [showAddedToast, setShowAddedToast] = useState(false);
 
     useEffect(() => {
         const fetchProduct = async () => {
@@ -43,8 +44,13 @@ export function ProductDetail() {
 
     const handleAddToCart = () => {
         addToCart(product);
-        setAdded(true);
-        setTimeout(() => setAdded(false), 2000);
+        setShowAddedToast(true);
+        setTimeout(() => setShowAddedToast(false), 3000);
+    };
+
+    const handleBuyNow = () => {
+        addToCart(product);
+        navigate('/cart');
     };
 
     if (loading) return <div className="h-screen flex items-center justify-center">Loading...</div>;
@@ -71,7 +77,7 @@ export function ProductDetail() {
                             <img
                                 src={getOptimizedImageUrl(product.image, 1200)}
                                 alt={product.name}
-                                className="w-full h-full object-cover"
+                                className="w-full h-full object-contain p-8"
                             />
                         </div>
                     </motion.div>
@@ -92,7 +98,7 @@ export function ProductDetail() {
                         <h1 className="text-5xl font-bold text-slate-900 mb-6 leading-tight">{product.name}</h1>
 
                         <div className="flex items-center gap-4 mb-10">
-                            <p className="text-4xl font-bold text-primary-400">${product.price}</p>
+                            <p className="text-4xl font-bold text-primary-400">{product.price.toLocaleString()} DZD</p>
                             <div className="h-8 w-[1px] bg-slate-200" />
                             <div className="flex items-center gap-1 text-yellow-400">
                                 {[...Array(5)].map((_, i) => <Check key={i} size={16} />)}
@@ -107,10 +113,18 @@ export function ProductDetail() {
                         <div className="flex flex-col sm:flex-row gap-4 mb-12">
                             <Button
                                 onClick={handleAddToCart}
+                                variant="secondary"
                                 size="lg"
-                                className="flex-1 py-5 shadow-xl shadow-primary-200 gap-3"
+                                className="flex-1 py-5 bg-slate-50 border-none hover:bg-slate-100 gap-3 text-sm"
                             >
-                                {added ? <><Check size={20} /> Added to Cart</> : <><ShoppingBag size={20} /> Secure This Piece</>}
+                                <ShoppingCart size={20} /> Add to Cart
+                            </Button>
+                            <Button
+                                onClick={handleBuyNow}
+                                size="lg"
+                                className="flex-1 py-5 shadow-xl shadow-primary-200 gap-3 text-sm"
+                            >
+                                <ShoppingBag size={20} /> Order Now
                             </Button>
                             <button className="p-5 border border-slate-200 rounded-full text-slate-500 hover:text-red-500 hover:bg-red-50 transition-all">
                                 <Heart size={24} />
@@ -139,6 +153,26 @@ export function ProductDetail() {
                     </motion.div>
                 </div>
             </div>
+
+            {/* Success Toast */}
+            <AnimatePresence>
+                {showAddedToast && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 50, scale: 0.9 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.9 }}
+                        className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[100] bg-slate-900 text-white px-8 py-4 rounded-[2rem] shadow-2xl flex items-center gap-4 border border-white/10 backdrop-blur-xl"
+                    >
+                        <div className="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center text-white">
+                            <CheckCircle2 size={18} />
+                        </div>
+                        <div>
+                            <p className="font-black text-xs uppercase tracking-widest">Added to Cart</p>
+                            <p className="text-[10px] text-slate-400 font-bold italic">Continuer vos achats ou voir le panier</p>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 }
