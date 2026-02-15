@@ -3,13 +3,12 @@ import { ArrowRight, Sparkles, ShoppingBag, ShoppingCart, CheckCircle2 } from 'l
 import { Button } from '../../components/common/Button';
 import { useNavigate, Link } from 'react-router-dom';
 import { HeroCarousel } from '../../components/layout/HeroCarousel';
-import { useEffect, useState } from 'react';
-import { collection, getDocs, limit, query } from 'firebase/firestore';
-import { db } from '../../services/firebase/config';
+import { useState } from 'react';
 import { useCart } from '../../context/CartContext';
+import { useProducts } from '../../hooks/useProducts';
 
 export function Home() {
-    const [products, setProducts] = useState([]);
+    const { products } = useProducts(12);
     const [filter, setFilter] = useState('All');
     const [showAddedToast, setShowAddedToast] = useState(false);
     const { addToCart } = useCart();
@@ -25,21 +24,6 @@ export function Home() {
         addToCart(product);
         navigate('/cart');
     };
-
-    useEffect(() => {
-        const fetchProducts = async () => {
-            try {
-                const q = query(collection(db, "products"), limit(12));
-                const querySnapshot = await getDocs(q);
-                const list = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                // Products fetched
-                setProducts(list);
-            } catch (error) {
-                console.error("Error fetching products:", error);
-            }
-        };
-        fetchProducts();
-    }, []);
 
     return (
         <div className="pt-0 overflow-x-hidden">
@@ -76,7 +60,7 @@ export function Home() {
                         ))}
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                    <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-8">
                         {products
                             .filter(p => filter === 'All' || p.category === filter)
                             .map((product, i) => (
@@ -86,7 +70,7 @@ export function Home() {
                                     whileInView={{ opacity: 1, y: 0 }}
                                     viewport={{ once: true, margin: '-50px' }}
                                     transition={{ duration: 0.3, delay: Math.min(i * 0.05, 0.2) }}
-                                    className="group bg-white rounded-[2.5rem] overflow-hidden shadow-sm hover:shadow-2xl hover:shadow-primary-100/50 transition-all duration-700 border border-slate-100"
+                                    className="group bg-white rounded-2xl sm:rounded-[2.5rem] overflow-hidden shadow-sm hover:shadow-2xl hover:shadow-primary-100/50 transition-all duration-700 border border-slate-100"
                                 >
                                     <div className="aspect-[4/5] overflow-hidden relative">
                                         <img
@@ -94,31 +78,31 @@ export function Home() {
                                             alt={product.name}
                                             loading="lazy"
                                             decoding="async"
-                                            className="w-full h-full object-contain p-4 group-hover:scale-105 transition-transform duration-500"
+                                            className="w-full h-full object-contain p-2 sm:p-4 group-hover:scale-105 transition-transform duration-500"
                                         />
-                                        <div className="absolute top-6 left-6">
-                                            <div className="bg-white/90 backdrop-blur-md px-4 py-1.5 rounded-xl text-[10px] font-black text-slate-900 uppercase tracking-widest shadow-sm">
+                                        <div className="absolute top-3 left-3 sm:top-6 sm:left-6">
+                                            <div className="bg-white/90 backdrop-blur-md px-2 py-1 sm:px-4 sm:py-1.5 rounded-lg sm:rounded-xl text-[8px] sm:text-[10px] font-black text-slate-900 uppercase tracking-widest shadow-sm">
                                                 {product.category}
                                             </div>
                                         </div>
                                     </div>
-                                    <div className="p-8">
-                                        <h3 className="font-black text-xl text-slate-900 tracking-tight leading-tight mb-4 h-14 line-clamp-2">{product.name}</h3>
-                                        <p className="font-black text-primary-400 text-2xl tracking-tighter mb-6">{product.price.toLocaleString()} DZD</p>
+                                    <div className="p-3 sm:p-8">
+                                        <h3 className="font-black text-xs sm:text-xl text-slate-900 tracking-tight leading-tight mb-1 sm:mb-4 h-8 sm:h-14 line-clamp-2">{product.name}</h3>
+                                        <p className="font-black text-primary-400 text-sm sm:text-2xl tracking-tighter mb-2 sm:mb-6">{product.price.toLocaleString()} DZD</p>
 
-                                        <div className="grid grid-cols-2 gap-3 pt-4 border-t border-slate-50">
+                                        <div className="grid grid-cols-2 gap-1.5 sm:gap-3 pt-2 sm:pt-4 border-t border-slate-50">
                                             <Button
                                                 onClick={() => handleAddToCart(product)}
                                                 variant="secondary"
-                                                className="rounded-xl py-3 px-2 text-[10px] font-black uppercase tracking-widest gap-2 bg-slate-50 border-none hover:bg-slate-100"
+                                                className="rounded-lg sm:rounded-xl py-2 sm:py-3 px-1 sm:px-2 text-[8px] sm:text-[10px] font-black uppercase tracking-widest gap-1 sm:gap-2 bg-slate-50 border-none hover:bg-slate-100"
                                             >
-                                                <ShoppingCart size={14} /> Add
+                                                <ShoppingCart size={12} className="sm:w-[14px] sm:h-[14px]" /> Add
                                             </Button>
                                             <Button
                                                 onClick={() => handleBuyNow(product)}
-                                                className="rounded-xl py-3 px-2 text-[10px] font-black uppercase tracking-widest gap-2 shadow-lg shadow-primary-100"
+                                                className="rounded-lg sm:rounded-xl py-2 sm:py-3 px-1 sm:px-2 text-[8px] sm:text-[10px] font-black uppercase tracking-widest gap-1 sm:gap-2 shadow-lg shadow-primary-100"
                                             >
-                                                <ShoppingBag size={14} /> Buy Now
+                                                <ShoppingBag size={12} className="sm:w-[14px] sm:h-[14px]" /> Buy
                                             </Button>
                                         </div>
                                     </div>

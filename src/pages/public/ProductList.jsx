@@ -1,15 +1,14 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Filter, ShoppingBag, Heart, Search, ShoppingCart, CheckCircle2 } from 'lucide-react';
 import { Button } from '../../components/common/Button';
 import { useNavigate, Link } from 'react-router-dom';
 import { useCart } from '../../context/CartContext';
-import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../../services/firebase/config';
+import { useProducts } from '../../hooks/useProducts';
 
 export function ProductList() {
-    const [products, setProducts] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const { products, loading: productsLoading } = useProducts();
     const [filter, setFilter] = useState('All');
     const [search, setSearch] = useState('');
     const { addToCart } = useCart();
@@ -29,27 +28,12 @@ export function ProductList() {
         setTimeout(() => setShowAddedToast(false), 3000);
     };
 
-    useEffect(() => {
-        const fetchProducts = async () => {
-            try {
-                const querySnapshot = await getDocs(collection(db, "products"));
-                const productsList = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                setProducts(productsList);
-            } catch (error) {
-                console.error("Error fetching products:", error);
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchProducts();
-    }, []);
-
     const filteredProducts = products.filter(p =>
         (filter === 'All' || p.category === filter) &&
         p.name.toLowerCase().includes(search.toLowerCase())
     );
 
-    if (loading) return <div className="h-screen flex items-center justify-center">Loading Gallery...</div>;
+    if (productsLoading) return <div className="h-screen flex items-center justify-center">Loading Gallery...</div>;
 
     return (
         <div className="pt-32 pb-24 min-h-screen bg-slate-50/50">
@@ -87,7 +71,7 @@ export function ProductList() {
                 </div>
 
                 {/* Product Grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
+                <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-10">
                     <AnimatePresence mode='popLayout'>
                         {filteredProducts.map((product) => (
                             <motion.div
@@ -97,7 +81,7 @@ export function ProductList() {
                                 animate={{ opacity: 1, y: 0 }}
                                 exit={{ opacity: 0, scale: 0.9 }}
                                 transition={{ duration: 0.3 }}
-                                className="group bg-white rounded-[3rem] overflow-hidden shadow-sm hover:shadow-2xl hover:shadow-primary-100/50 transition-all duration-700 border border-slate-50"
+                                className="group bg-white rounded-2xl sm:rounded-[3rem] overflow-hidden shadow-sm hover:shadow-2xl hover:shadow-primary-100/50 transition-all duration-700 border border-slate-50"
                             >
                                 <div className="aspect-[3/4] overflow-hidden relative bg-slate-50">
                                     <img
@@ -105,59 +89,59 @@ export function ProductList() {
                                         alt={product.name}
                                         loading="lazy"
                                         decoding="async"
-                                        className="w-full h-full object-contain p-6 group-hover:scale-105 transition-transform duration-500"
+                                        className="w-full h-full object-contain p-3 sm:p-6 group-hover:scale-105 transition-transform duration-500"
                                     />
 
                                     {/* Badges */}
-                                    <div className="absolute top-6 left-6 flex flex-col gap-2">
+                                    <div className="absolute top-3 left-3 sm:top-6 sm:left-6 flex flex-col gap-1 sm:gap-2">
                                         {product.isPromo && (
-                                            <div className="bg-red-500 text-white px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-xl border-2 border-white/20 animate-pulse">
-                                                Promotion
+                                            <div className="bg-red-500 text-white px-2 py-0.5 sm:px-4 sm:py-1.5 rounded-lg sm:rounded-xl text-[7px] sm:text-[10px] font-black uppercase tracking-widest shadow-xl border-2 border-white/20 animate-pulse">
+                                                Promo
                                             </div>
                                         )}
-                                        <div className="bg-white/90 backdrop-blur-md px-4 py-1.5 rounded-xl text-[10px] font-black text-slate-900 uppercase tracking-widest shadow-sm">
+                                        <div className="bg-white/90 backdrop-blur-md px-2 py-0.5 sm:px-4 sm:py-1.5 rounded-lg sm:rounded-xl text-[7px] sm:text-[10px] font-black text-slate-900 uppercase tracking-widest shadow-sm">
                                             {product.category}
                                         </div>
                                     </div>
 
-                                    <div className="absolute top-6 right-6">
-                                        <button className="p-4 bg-white/90 backdrop-blur-md rounded-2xl shadow-sm text-slate-400 hover:text-red-500 transition-all hover:scale-110">
-                                            <Heart size={22} />
+                                    <div className="absolute top-3 right-3 sm:top-6 sm:right-6">
+                                        <button className="p-2 sm:p-4 bg-white/90 backdrop-blur-md rounded-xl sm:rounded-2xl shadow-sm text-slate-400 hover:text-red-500 transition-all hover:scale-110">
+                                            <Heart size={16} className="sm:w-[22px] sm:h-[22px]" />
                                         </button>
                                     </div>
 
-                                    <div className="absolute bottom-8 left-8 right-8 translate-y-32 group-hover:translate-y-0 transition-all duration-700 ease-out">
-                                        <Button onClick={() => handleBuy(product)} className="w-full py-5 gap-3 shadow-2xl shadow-primary-400/40 rounded-2xl">
-                                            <ShoppingBag size={20} /> Order Now
+                                    <div className="absolute bottom-4 left-4 right-4 sm:bottom-8 sm:left-8 sm:right-8 translate-y-32 group-hover:translate-y-0 transition-all duration-700 ease-out">
+                                        <Button onClick={() => handleBuy(product)} className="w-full py-3 sm:py-5 gap-2 sm:gap-3 shadow-2xl shadow-primary-400/40 rounded-xl sm:rounded-2xl text-[10px] sm:text-sm">
+                                            <ShoppingBag size={16} className="sm:w-[20px] sm:h-[20px]" /> Order Now
                                         </Button>
                                     </div>
                                 </div>
-                                <div className="p-10">
-                                    <div className="flex justify-between items-start mb-4">
-                                        <h3 className="font-black text-2xl text-slate-900 tracking-tight leading-tight">{product.name}</h3>
+                                <div className="p-3 sm:p-10">
+                                    <div className="flex justify-between items-start mb-1 sm:mb-4">
+                                        <h3 className="font-black text-xs sm:text-2xl text-slate-900 tracking-tight leading-tight line-clamp-2">{product.name}</h3>
                                     </div>
-                                    <div className="flex items-center gap-4">
-                                        <span className="font-black text-primary-400 text-2xl tracking-tighter">{product.price.toLocaleString()} DZD</span>
+                                    <div className="flex flex-col sm:flex-row sm:items-center gap-0 sm:gap-4">
+                                        <span className="font-black text-primary-400 text-sm sm:text-2xl tracking-tighter">{product.price.toLocaleString()} DZD</span>
                                         {product.oldPrice && (
-                                            <span className="text-slate-400 text-sm font-bold line-through decoration-red-400/50 decoration-2 italic">
+                                            <span className="text-slate-400 text-[10px] sm:text-sm font-bold line-through decoration-red-400/50 decoration-2 italic">
                                                 {product.oldPrice.toLocaleString()} DZD
                                             </span>
                                         )}
                                     </div>
 
-                                    <div className="grid grid-cols-2 gap-4 mt-8">
+                                    <div className="grid grid-cols-2 gap-1.5 sm:gap-4 mt-3 sm:mt-8">
                                         <Button
                                             onClick={() => handleAddToCart(product)}
                                             variant="secondary"
-                                            className="w-full py-4 rounded-2xl font-black text-xs uppercase tracking-widest gap-2 bg-slate-50 border-none hover:bg-slate-100"
+                                            className="w-full py-2 sm:py-4 rounded-lg sm:rounded-2xl font-black text-[8px] sm:text-xs uppercase tracking-widest gap-1 sm:gap-2 bg-slate-50 border-none hover:bg-slate-100"
                                         >
-                                            <ShoppingCart size={16} /> Add
+                                            <ShoppingCart size={12} className="sm:w-[16px] sm:h-[16px]" /> Add
                                         </Button>
                                         <Button
                                             onClick={() => handleBuy(product)}
-                                            className="w-full py-4 rounded-2xl font-black text-xs uppercase tracking-widest gap-2 shadow-xl shadow-primary-100"
+                                            className="w-full py-2 sm:py-4 rounded-lg sm:rounded-2xl font-black text-[8px] sm:text-xs uppercase tracking-widest gap-1 sm:gap-2 shadow-xl shadow-primary-100"
                                         >
-                                            <ShoppingBag size={16} /> Order
+                                            <ShoppingBag size={12} className="sm:w-[16px] sm:h-[16px]" /> Order
                                         </Button>
                                     </div>
                                 </div>
