@@ -1,10 +1,11 @@
-const API_URL = 'https://procolis.com/api_v1/colis/api_create';
+// Use relative path which will be proxied by Vite (dev) or Netlify (prod)
+const API_URL = '/api/ecotrack/api_create';
 const API_TOKEN = 'PcUfmcinux7pZGot0Ex6wJYPjWRk7EexgAXeSgqB4JXxJthGX9W2Sb1TEOa0';
 
 /**
  * Creates a delivery order in GoLivri (Ecotrack) system.
  * @param {object} orderData - The order details.
- * @returns {Promise<object>} - The API response.
+ * @returns {Promise<object>} - The API response containing tracking info.
  */
 export async function createGoLivriOrder(orderData) {
     if (!API_TOKEN) {
@@ -13,6 +14,8 @@ export async function createGoLivriOrder(orderData) {
     }
 
     try {
+        console.log("Syncing order with GoLivri via Proxy:", API_URL);
+
         // Prepare payload according to Ecotrack standard
         const payload = {
             api_token: API_TOKEN,
@@ -28,10 +31,6 @@ export async function createGoLivriOrder(orderData) {
             stop_desk: 0 // 0 = Domicile (Home Delivery) as requested
         };
 
-        // Some Ecotrack APIs use query params, some use JSON or FormData.
-        // Assuming JSON body for modern integration.
-        // If it fails, try FormData.
-
         const response = await fetch(API_URL, {
             method: 'POST',
             headers: {
@@ -41,16 +40,19 @@ export async function createGoLivriOrder(orderData) {
             body: JSON.stringify(payload)
         });
 
+        // Ecotrack sometimes returns 200 even on error with success: false in body
+        // Or 422 for validation errors.
         if (!response.ok) {
             const errorText = await response.text();
             throw new Error(`GoLivri API Error: ${response.status} ${errorText}`);
         }
 
         const result = await response.json();
+        console.log("GoLivri Order Created:", result);
         return result;
     } catch (error) {
         console.error("Failed to sync order with GoLivri:", error);
-        // We don't block the user flow, just log the error.
+        // Return null/error object so UI knows it failed but doesn't crash
         return { error: error.message };
     }
 }

@@ -6,7 +6,7 @@ import { Button } from '../../components/common/Button';
 import { ShoppingBag, Trash2, MapPin, Truck, Home as HomeIcon, CheckCircle, Wallet, Info, ShieldCheck } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, addDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../../services/firebase/config';
 import { createGoLivriOrder } from '../../services/delivery/golivriService';
 
@@ -22,6 +22,7 @@ export function Cart() {
         address: '',
         deliveryType: 'home', // Always home delivery
     });
+    const [trackingCode, setTrackingCode] = useState(null);
 
     const deliveryFee = useMemo(() => {
         return getDeliveryPrice(formData.wilaya);
@@ -50,9 +51,8 @@ export function Cart() {
             // 1. Save to Firebase
             const orderRef = await addDoc(collection(db, "orders"), orderData);
 
-            // 2. Sync with GoLivri (Non-blocking)
-            // We don't await this because we don't want to stop the user if API is down
-            createGoLivriOrder({
+            // 2. Sync with GoLivri (Wait for tracking code)
+            const deliveryResult = await createGoLivriOrder({
                 fullName: formData.fullName,
                 phone: formData.phone,
                 wilaya: formData.wilaya,
@@ -60,7 +60,14 @@ export function Cart() {
                 address: formData.address,
                 total: finalTotal,
                 items: cart.map(item => ({ name: item.name, quantity: item.quantity }))
-            }).catch(err => console.error("Background sync failed", err));
+            });
+
+            if (deliveryResult && (deliveryResult.code_suivi || deliveryResult.tracking_code)) {
+                const code = deliveryResult.code_suivi || deliveryResult.tracking_code;
+                setTrackingCode(code);
+                // Update order with tracking code
+                await updateDoc(orderRef, { deliveryTracking: code });
+            }
 
             setStep(3);
             clearCart();
@@ -80,6 +87,16 @@ export function Cart() {
                         <CheckCircle size={48} />
                     </div>
                     <h2 className="text-3xl font-bold mb-4 text-slate-800">Order Placed!</h2>
+
+                    {trackingCode && (
+                        <div className="bg-primary-50 p-4 rounded-xl border border-primary-100 mb-6 mx-auto inline-block">
+                            <span className="text-slate-500 text-sm block mb-1">Your Tracking Number</span>
+                            <span className="text-2xl font-mono font-bold text-primary-600 tracking-wider">
+                                {trackingCode}
+                            </span>
+                        </div>
+                    )}
+
                     <p className="text-slate-500 mb-10 leading-relaxed">
                         Thank you for your order. We will call you at <span className="text-slate-900 font-bold">{formData.phone}</span> to confirm before shipping via <span className="text-primary-400 font-bold">Home Delivery</span>.
                     </p>

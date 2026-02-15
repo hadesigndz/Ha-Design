@@ -4,6 +4,16 @@ import react from '@vitejs/plugin-react'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
+  server: {
+    // Proxy API requests to backend / external APIs to avoid CORS during development
+    proxy: {
+      '/api/ecotrack': {
+        target: 'https://procolis.com/api_v1/colis',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/ecotrack/, ''),
+      }
+    }
+  },
   build: {
     // Optimize chunking for faster loading
     rollupOptions: {
