@@ -1,5 +1,5 @@
-const API_URL = import.meta.env.VITE_GOLIVRI_API_URL || 'https://app.golivri.dz/api/v1/create/order';
-const API_TOKEN = import.meta.env.VITE_GOLIVRI_TOKEN;
+const API_URL = 'https://procolis.com/api_v1/colis/api_create';
+const API_TOKEN = 'PcUfmcinux7pZGot0Ex6wJYPjWRk7EexgAXeSgqB4JXxJthGX9W2Sb1TEOa0';
 
 /**
  * Creates a delivery order in GoLivri (Ecotrack) system.
