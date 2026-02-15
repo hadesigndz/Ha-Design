@@ -62,7 +62,7 @@ export function Cart() {
     if (step === 3) {
         return (
             <div className="pt-40 pb-20 text-center container mx-auto px-6">
-                <div className="max-w-md mx-auto bg-white p-12 rounded-[3.5rem] shadow-2xl border border-primary-50">
+                <div className="max-w-md mx-auto bg-white p-6 sm:p-12 rounded-[2.5rem] sm:rounded-[3.5rem] shadow-2xl border border-primary-50">
                     <div className="w-24 h-24 bg-green-50 text-green-500 rounded-full flex items-center justify-center mx-auto mb-8 shadow-inner">
                         <CheckCircle size={48} />
                     </div>
@@ -93,34 +93,34 @@ export function Cart() {
     }
 
     return (
-        <div className="pt-32 pb-24 bg-slate-50/50 min-h-screen">
-            <div className="container mx-auto px-6 max-w-6xl">
-                <div className="grid lg:grid-cols-3 gap-10">
-                    <div className="lg:col-span-2">
+        <div className="pt-24 pb-24 bg-slate-50/50 min-h-screen">
+            <div className="container mx-auto px-4 max-w-6xl w-full text-left">
+                <div className="flex flex-col lg:grid lg:grid-cols-3 gap-8 sm:gap-10">
+                    <div className="lg:col-span-2 w-full">
                         <form id="order-form" onSubmit={handleOrder} className="space-y-8">
-                            <div className="bg-white p-8 rounded-[3rem] shadow-sm border border-slate-100">
-                                <h1 className="text-3xl font-bold mb-10 flex items-center gap-3">
-                                    <ShoppingBag className="text-primary-400" /> My Selections
+                            <div className="bg-white p-5 sm:p-8 rounded-[2rem] sm:rounded-[3rem] shadow-sm border border-slate-100">
+                                <h1 className="text-2xl sm:text-3xl font-bold mb-6 sm:mb-10 flex items-center gap-2 sm:gap-3">
+                                    <ShoppingBag className="text-primary-400 w-6 h-6 sm:w-8 sm:h-8" /> My Selections
                                 </h1>
                                 <div className="space-y-8">
                                     {cart.map((item) => (
-                                        <div key={item.id} className="group flex flex-col sm:flex-row items-center gap-8 p-4 hover:bg-slate-50 rounded-[2rem] transition-all">
-                                            <div className="w-32 h-32 rounded-2xl overflow-hidden shadow-md">
-                                                <img src={item.image} alt={item.name} className="w-full h-full object-contain bg-slate-50 p-2 group-hover:scale-110 transition-transform duration-700" />
+                                        <div key={item.id} className="group flex flex-col sm:flex-row items-center gap-4 sm:gap-8 p-3 sm:p-4 hover:bg-slate-50 rounded-[1.5rem] sm:rounded-[2rem] transition-all border border-slate-50 sm:border-transparent w-full">
+                                            <div className="w-full sm:w-32 h-40 sm:h-32 rounded-xl sm:rounded-2xl overflow-hidden shadow-md shrink-0 bg-slate-50">
+                                                <img src={item.image} alt={item.name} className="w-full h-full object-contain p-2 group-hover:scale-110 transition-transform duration-700" />
                                             </div>
-                                            <div className="flex-grow text-center sm:text-left">
-                                                <h3 className="font-bold text-xl text-slate-800 mb-1">{item.name}</h3>
-                                                <p className="text-slate-400 text-sm mb-2">{item.category}</p>
+                                            <div className="flex-grow text-center sm:text-left w-full sm:w-auto">
+                                                <h3 className="font-bold text-lg sm:text-xl text-slate-800 mb-1 leading-tight">{item.name}</h3>
+                                                <p className="text-slate-400 text-xs sm:text-sm mb-2">{item.category}</p>
                                                 <p className="text-primary-400 font-black text-lg">{item.price.toLocaleString()} DZD</p>
                                             </div>
-                                            <div className="flex items-center gap-6 bg-white px-4 py-2 rounded-2xl shadow-sm border border-slate-50">
-                                                <div className="flex items-center gap-4">
+                                            <div className="flex w-full sm:w-auto justify-between sm:justify-start items-center gap-4 sm:gap-6 bg-white px-4 py-2 rounded-2xl shadow-sm border border-slate-50">
+                                                <div className="flex items-center gap-3 sm:gap-4">
                                                     <button type="button" onClick={() => updateQuantity(item.id, item.quantity - 1)} className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-primary-50 text-slate-400 hover:text-primary-400 transition-colors">-</button>
                                                     <span className="w-6 text-center font-black">{item.quantity}</span>
                                                     <button type="button" onClick={() => updateQuantity(item.id, item.quantity + 1)} className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-primary-50 text-slate-400 hover:text-primary-400 transition-colors">+</button>
                                                 </div>
                                                 <button type="button" onClick={() => removeFromCart(item.id)} className="text-slate-300 hover:text-red-500 transition-colors">
-                                                    <Trash2 size={22} />
+                                                    <Trash2 size={20} className="sm:w-[22px]" />
                                                 </button>
                                             </div>
                                         </div>
@@ -128,12 +128,12 @@ export function Cart() {
                                 </div>
                             </div>
 
-                            <div className="bg-white p-10 rounded-[3rem] shadow-sm border border-slate-100">
-                                <div className="flex items-center gap-3 mb-8">
+                            <div className="bg-white p-5 sm:p-10 rounded-[2rem] sm:rounded-[3rem] shadow-sm border border-slate-100">
+                                <div className="flex items-center gap-3 mb-6 sm:mb-8">
                                     <div className="w-10 h-10 rounded-xl bg-primary-50 text-primary-400 flex items-center justify-center">
                                         <MapPin size={20} />
                                     </div>
-                                    <h2 className="text-2xl font-bold">Shipping Details</h2>
+                                    <h2 className="text-xl sm:text-2xl font-bold">Shipping Details</h2>
                                 </div>
                                 <div className="space-y-6">
                                     <div className="grid md:grid-cols-2 gap-6">
@@ -142,7 +142,7 @@ export function Cart() {
                                             <input
                                                 type="text" required value={formData.fullName}
                                                 onChange={e => setFormData({ ...formData, fullName: e.target.value })}
-                                                className="w-full px-8 py-4 bg-slate-50 rounded-2xl border-none focus:ring-2 focus:ring-primary-400 focus:bg-white transition-all text-slate-800 shadow-inner"
+                                                className="w-full px-5 py-3 sm:px-8 sm:py-4 bg-slate-50 rounded-xl sm:rounded-2xl border-none focus:ring-2 focus:ring-primary-400 focus:bg-white transition-all text-slate-800 shadow-inner text-sm sm:text-base"
                                                 placeholder="Your Name"
                                             />
                                         </div>
@@ -151,7 +151,7 @@ export function Cart() {
                                             <input
                                                 type="tel" required value={formData.phone}
                                                 onChange={e => setFormData({ ...formData, phone: e.target.value })}
-                                                className="w-full px-8 py-4 bg-slate-50 rounded-2xl border-none focus:ring-2 focus:ring-primary-400 focus:bg-white transition-all text-slate-800 shadow-inner"
+                                                className="w-full px-5 py-3 sm:px-8 sm:py-4 bg-slate-50 rounded-xl sm:rounded-2xl border-none focus:ring-2 focus:ring-primary-400 focus:bg-white transition-all text-slate-800 shadow-inner text-sm sm:text-base"
                                                 placeholder="0X XX XX XX XX"
                                             />
                                         </div>
@@ -163,7 +163,7 @@ export function Cart() {
                                             <select
                                                 required value={formData.wilaya}
                                                 onChange={e => setFormData({ ...formData, wilaya: e.target.value, commune: '' })}
-                                                className="w-full px-8 py-4 bg-slate-50 rounded-2xl border-none focus:ring-2 focus:ring-primary-400 focus:bg-white transition-all appearance-none cursor-pointer"
+                                                className="w-full px-5 py-3 sm:px-8 sm:py-4 bg-slate-50 rounded-xl sm:rounded-2xl border-none focus:ring-2 focus:ring-primary-400 focus:bg-white transition-all appearance-none cursor-pointer text-sm sm:text-base"
                                             >
                                                 <option value="">Select Region</option>
                                                 {Object.entries(ALGERIA_REGIONS).map(([code, data]) => (
@@ -176,7 +176,7 @@ export function Cart() {
                                             <select
                                                 required value={formData.commune} disabled={!formData.wilaya}
                                                 onChange={e => setFormData({ ...formData, commune: e.target.value })}
-                                                className="w-full px-8 py-4 bg-slate-50 rounded-2xl border-none focus:ring-2 focus:ring-primary-400 focus:bg-white transition-all appearance-none cursor-pointer disabled:opacity-50"
+                                                className="w-full px-5 py-3 sm:px-8 sm:py-4 bg-slate-50 rounded-xl sm:rounded-2xl border-none focus:ring-2 focus:ring-primary-400 focus:bg-white transition-all appearance-none cursor-pointer disabled:opacity-50 text-sm sm:text-base"
                                             >
                                                 <option value="">Select Municipality</option>
                                                 {formData.wilaya && ALGERIA_REGIONS[formData.wilaya].communes.map(c => (
@@ -191,7 +191,7 @@ export function Cart() {
                                         <input
                                             type="text" required value={formData.address}
                                             onChange={e => setFormData({ ...formData, address: e.target.value })}
-                                            className="w-full px-8 py-4 bg-slate-50 rounded-2xl border-none focus:ring-2 focus:ring-primary-400 focus:bg-white transition-all text-slate-800 shadow-inner"
+                                            className="w-full px-5 py-3 sm:px-8 sm:py-4 bg-slate-50 rounded-xl sm:rounded-2xl border-none focus:ring-2 focus:ring-primary-400 focus:bg-white transition-all text-slate-800 shadow-inner text-sm sm:text-base"
                                             placeholder="Street, Building, Flat number..."
                                         />
                                     </div>
@@ -226,7 +226,7 @@ export function Cart() {
                     </div>
 
                     <div className="lg:col-span-1">
-                        <div className="bg-white p-10 rounded-[3rem] shadow-xl border border-primary-50 sticky top-32 overflow-hidden">
+                        <div className="bg-white p-6 sm:p-10 rounded-[2rem] sm:rounded-[3rem] shadow-xl border border-primary-50 sticky top-32 overflow-hidden">
                             <div className="absolute top-0 right-0 w-32 h-32 bg-primary-50/30 rounded-full blur-3xl -z-10" />
                             <h2 className="text-2xl font-bold mb-8 tracking-tight">Order Summary</h2>
 
