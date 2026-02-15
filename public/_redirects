@@ -1,5 +1,5 @@
 # Fixed Proxy for ProColis API
-/api/delivery/create  https://procolis.com/api_v1/colis/api_create  200!
+/api/delivery/create  https://procolis.com/api_v1/api_create  200!
 
 # SPA Redirection
 /*  /index.html  200

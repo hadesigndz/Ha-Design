@@ -1,71 +1,70 @@
 import { ALGERIA_REGIONS } from '../../utils/algeriaData';
 
-// Standardized Proxy Path
+// Standardized Proxy Path (Resolved to root to avoid 404s on subpages)
 const API_ENDPOINT = '/api/delivery/create';
 const API_TOKEN = 'PcUfmcinux7pZGot0Ex6wJYPjWRk7EexgAXeSgqB4JXxJthGX9W2Sb1TEOa0';
 
 /**
  * Creates an order in the ProColis/Ecotrack system.
- * @param {Object} orderData - Formatted order data.
  */
 export async function createGoLivriOrder(orderData) {
-    console.log("%c[Delivery Sync Attempt Started]", "color: white; background: #059669; padding: 4px; font-weight: bold; font-size: 12px;");
+    console.log("%c[Sync v1.2.1] Attempting ProColis Connection...", "color: white; background: #059669; padding: 4px; font-weight: bold;");
 
     try {
-        // Resolve Wilaya Name from code if not provided
         const wilayaCode = orderData.wilaya;
         const wilayaName = orderData.wilayaName || ALGERIA_REGIONS[wilayaCode]?.name || wilayaCode;
 
-        const payload = new URLSearchParams();
-        payload.append('api_token', API_TOKEN);
+        // Construct Shotgun Payload
+        const params = new URLSearchParams();
+        params.append('api_token', API_TOKEN);
 
-        // Use multiple naming conventions to ensure compatibility
-        payload.append('nom_client', orderData.fullName);
-        payload.append('client', orderData.fullName);
+        // Client Info
+        params.append('nom_client', orderData.fullName);
+        params.append('telephone', orderData.phone);
+        params.append('adresse', `${orderData.address}, ${orderData.commune}`);
 
-        payload.append('telephone', orderData.phone);
-        payload.append('phone', orderData.phone);
+        // Region Info
+        params.append('code_wilaya', wilayaCode);
+        params.append('wilaya', wilayaName);
+        params.append('commune', orderData.commune);
 
-        payload.append('adresse', orderData.address);
-        payload.append('code_wilaya', wilayaCode);
-        payload.append('wilaya', wilayaName);
+        // Order Info
+        params.append('montant', Math.round(orderData.total)); // Ensure integer
+        params.append('produit', orderData.items.map(i => `${i.name} x${i.quantity}`).join(', '));
+        params.append('reference', orderData.orderId || `HA-${Date.now()}`);
 
-        payload.append('commune', orderData.commune);
+        // Service Flags
+        params.append('type', '1'); // Standard Delivery
+        params.append('stop_desk', '0'); // Home
+        params.append('prepared_by', 'Ha-Design App');
 
-        payload.append('montant', orderData.total);
-        payload.append('total', orderData.total);
+        // Use absolute path from window origin to prevent 404 on /admin
+        const fetchUrl = `${window.location.origin}${API_ENDPOINT}`;
 
-        const productsStr = orderData.items.map(i => `${i.name} (x${i.quantity})`).join(', ');
-        payload.append('produit', productsStr);
+        console.log("📤 Sending Payload to:", fetchUrl);
 
-        payload.append('type', '1'); // Delivery
-        payload.append('stop_desk', '0'); // Home Delivery
-        payload.append('reference', orderData.orderId || `ORDER-${Date.now()}`);
-
-        const url = `${window.location.origin}${API_ENDPOINT}?api_token=${API_TOKEN}`;
-
-        console.log("Calling Proxied API:", url);
-
-        const response = await fetch(url, {
+        const response = await fetch(fetchUrl, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
                 'Accept': 'application/json'
             },
-            body: payload.toString()
+            body: params.toString()
         });
 
+        const rawText = await response.text();
+        console.log("📥 Raw Response:", rawText);
+
         if (!response.ok) {
-            const errorText = await response.text();
-            console.error("Delivery API Error Response:", errorText);
-            return { success: false, error: `Server returned ${response.status}: ${errorText}` };
+            throw new Error(`Server returned ${response.status}: ${rawText}`);
         }
 
-        const result = await response.json();
-        console.log("Delivery Sync Result:", result);
+        const result = JSON.parse(rawText);
+        console.log("✅ Sync Result:", result);
         return result;
+
     } catch (error) {
-        console.error("FATAL: Delivery Sync Error:", error);
+        console.error("❌ Sync Failed:", error);
         return { success: false, error: error.message };
     }
 }

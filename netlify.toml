@@ -2,10 +2,10 @@
   command = "npm run build"
   publish = "dist"
 
-# Simple fixed proxy for ProColis API to bypass CORS
+# Fixed proxy for ProColis API (Ecotrack)
 [[redirects]]
   from = "/api/delivery/create"
-  to = "https://procolis.com/api_v1/colis/api_create"
+  to = "https://procolis.com/api_v1/api_create"
   status = 200
   force = true
 

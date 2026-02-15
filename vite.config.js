@@ -8,7 +8,7 @@ export default defineConfig({
     // Proxy API requests to avoid CORS during development
     proxy: {
       '/api/delivery/create': {
-        target: 'https://procolis.com/api_v1/colis/api_create',
+        target: 'https://procolis.com/api_v1/api_create',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api\/delivery\/create/, ''),
       }
