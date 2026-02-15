@@ -12,7 +12,9 @@ const IGNORED_ERRORS = [
 ];
 
 const shouldIgnore = (msg) => {
-  return typeof msg === 'string' && IGNORED_ERRORS.some(err => msg.includes(err));
+  if (!msg) return false;
+  const str = msg.toString();
+  return IGNORED_ERRORS.some(err => str.includes(err));
 };
 
 const originalError = console.error;

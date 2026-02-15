@@ -398,6 +398,11 @@ export function AdminDashboard() {
                                                         <div className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest mt-2 p-2 bg-slate-50 rounded-xl border border-slate-100 inline-block">
                                                             <MapPin size={10} /> {order.customer?.wilaya} - {order.customer?.commune}
                                                         </div>
+                                                        {order.deliveryTracking && (
+                                                            <div className="flex items-center gap-2 text-[10px] font-black text-primary-500 uppercase tracking-widest mt-2 p-2 bg-primary-50 rounded-xl border border-primary-100">
+                                                                <Truck size={10} /> {order.deliveryTracking}
+                                                            </div>
+                                                        )}
                                                     </div>
                                                 </td>
                                                 <td className="px-8 py-8">
@@ -586,6 +591,14 @@ export function AdminDashboard() {
                                             <MapPin size={12} /> Shipping Address
                                         </div>
                                         <p className="font-bold text-slate-700 mt-2">{selectedOrder.customer.wilaya}, {selectedOrder.customer.commune}</p>
+                                        {selectedOrder.deliveryTracking && (
+                                            <div className="mt-4 pt-4 border-t border-slate-100">
+                                                <div className="flex items-center gap-2 text-[10px] font-black text-primary-400 uppercase tracking-widest mb-1">
+                                                    <Truck size={12} /> Delivery Tracking
+                                                </div>
+                                                <p className="font-mono font-black text-primary-600 text-lg tracking-wider">{selectedOrder.deliveryTracking}</p>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             </div>
