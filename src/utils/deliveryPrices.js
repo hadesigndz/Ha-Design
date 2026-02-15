@@ -1,48 +1,11 @@
-export const DELIVERY_SERVICES = {
-    yalidine: {
-        name: "Yalidine Express",
-        prices: {
-            zone0: { home: 450, desk: 250 }, // Alger
-            zone1: { home: 550, desk: 350 }, // Center-West
-            zone2: { home: 700, desk: 450 }, // Major North
-            zone3: { home: 800, desk: 550 }, // Central Plateaus
-            zone4: { home: 1000, desk: 750 }, // Near South
-            zone5: { home: 1200, desk: 900 }, // Far South
-        }
-    },
-    zr_express: {
-        name: "ZR Express",
-        prices: {
-            zone0: { home: 400, desk: 200 },
-            zone1: { home: 500, desk: 300 },
-            zone2: { home: 650, desk: 400 },
-            zone3: { home: 750, desk: 500 },
-            zone4: { home: 900, desk: 700 },
-            zone5: { home: 1100, desk: 850 },
-        }
-    },
-    zimou: {
-        name: "Zimou Express",
-        prices: {
-            zone0: { home: 380, desk: 180 },
-            zone1: { home: 480, desk: 280 },
-            zone2: { home: 600, desk: 350 },
-            zone3: { home: 700, desk: 450 },
-            zone4: { home: 850, desk: 650 },
-            zone5: { home: 1000, desk: 800 },
-        }
-    },
-    golivry: {
-        name: "Go Livery",
-        prices: {
-            zone0: { home: 420, desk: 220 },
-            zone1: { home: 520, desk: 320 },
-            zone2: { home: 680, desk: 420 },
-            zone3: { home: 780, desk: 520 },
-            zone4: { home: 950, desk: 720 },
-            zone5: { home: 1150, desk: 880 },
-        }
-    }
+// Single delivery price table (no company selection)
+export const DELIVERY_PRICES = {
+    zone0: { home: 400, desk: 200 },  // Alger
+    zone1: { home: 500, desk: 300 },  // Center-West
+    zone2: { home: 650, desk: 400 },  // Major North
+    zone3: { home: 750, desk: 500 },  // Central Plateaus
+    zone4: { home: 900, desk: 700 },  // Near South
+    zone5: { home: 1100, desk: 850 }, // Far South
 };
 
 export const WILAYA_ZONES = {

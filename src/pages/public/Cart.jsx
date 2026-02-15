@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useCart } from '../../context/CartContext';
 import { ALGERIA_REGIONS } from '../../utils/algeriaData';
-import { DELIVERY_SERVICES, getWilayaZone } from '../../utils/deliveryPrices';
+import { DELIVERY_PRICES, getWilayaZone } from '../../utils/deliveryPrices';
 import { Button } from '../../components/common/Button';
 import { ShoppingBag, Trash2, MapPin, Truck, Home as HomeIcon, CheckCircle, Wallet, Info, ShieldCheck } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -20,15 +20,13 @@ export function Cart() {
         commune: '',
         address: '',
         deliveryType: 'home', // 'home' or 'desk'
-        deliveryService: 'yalidine' // Default
     });
 
     const deliveryFee = useMemo(() => {
         if (!formData.wilaya) return 0;
         const zone = getWilayaZone(formData.wilaya);
-        const service = DELIVERY_SERVICES[formData.deliveryService];
-        return service.prices[zone][formData.deliveryType] || 0;
-    }, [formData.wilaya, formData.deliveryType, formData.deliveryService]);
+        return DELIVERY_PRICES[zone][formData.deliveryType] || 0;
+    }, [formData.wilaya, formData.deliveryType]);
 
     const finalTotal = cartTotal + deliveryFee;
 
@@ -70,7 +68,7 @@ export function Cart() {
                     </div>
                     <h2 className="text-3xl font-bold mb-4 text-slate-800">Order Placed!</h2>
                     <p className="text-slate-500 mb-10 leading-relaxed">
-                        Thank you for your order. We will call you at <span className="text-slate-900 font-bold">{formData.phone}</span> to confirm before shipping via <span className="text-primary-400 font-bold">{DELIVERY_SERVICES[formData.deliveryService].name}</span>.
+                        Thank you for your order. We will call you at <span className="text-slate-900 font-bold">{formData.phone}</span> to confirm before shipping via <span className="text-primary-400 font-bold">{formData.deliveryType === 'home' ? 'Home Delivery' : 'Stop Desk Pickup'}</span>.
                     </p>
                     <div className="bg-slate-50 p-6 rounded-2xl mb-8 border border-slate-100 italic text-sm text-slate-600">
                         Payment Mode: <strong>Cash on Delivery (COD)</strong>
@@ -206,26 +204,6 @@ export function Cart() {
                                         <Truck size={20} />
                                     </div>
                                     <h2 className="text-2xl font-bold">Delivery Method</h2>
-                                </div>
-
-                                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
-                                    {Object.entries(DELIVERY_SERVICES).map(([id, service]) => (
-                                        <button
-                                            key={id}
-                                            type="button"
-                                            onClick={() => setFormData({ ...formData, deliveryService: id })}
-                                            className={`p-6 rounded-[2rem] border-2 text-left transition-all relative overflow-hidden ${formData.deliveryService === id ? 'border-primary-400 bg-primary-50 ring-4 ring-primary-50' : 'border-slate-50 hover:border-primary-100 bg-slate-50/30'}`}
-                                        >
-                                            <span className={`block font-bold text-lg mb-1 ${formData.deliveryService === id ? 'text-primary-500' : 'text-slate-700'}`}>{service.name}</span>
-                                            <div className="flex items-center gap-2 text-slate-400 text-xs text-nowrap">
-                                                <CheckCircle size={14} className={formData.deliveryService === id ? 'text-primary-400' : 'opacity-0'} />
-                                                Verified Carrier
-                                            </div>
-                                        </button>
-                                    ))}
-                                </div>
-
-                                <div className="flex flex-col sm:flex-row gap-4 p-2 bg-slate-50 rounded-[2.2rem]">
                                     <button
                                         type="button"
                                         onClick={() => setFormData({ ...formData, deliveryType: 'home' })}
@@ -262,7 +240,7 @@ export function Cart() {
                                     <div className="flex flex-col gap-1">
                                         <span className="font-medium">Delivery Fee</span>
                                         <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 bg-slate-50 px-2 py-1 rounded-md">
-                                            {DELIVERY_SERVICES[formData.deliveryService].name}
+                                            {formData.deliveryType === 'home' ? 'Home Delivery' : 'Stop Desk'}
                                         </span>
                                     </div>
                                     <span className="font-bold text-primary-400">+{deliveryFee.toLocaleString()} DZD</span>
