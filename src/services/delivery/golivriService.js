@@ -1,18 +1,17 @@
 import { ALGERIA_REGIONS } from '../../utils/algeriaData';
 
-// FIXED PROXY PATH v1.2.4 - Switching to JSON payload based on ProColis 415 error feedback
+// FIXED PROXY PATH v1.2.5 - Hybrid Mode (Token in URL + JSON Body)
 const API_PROXY_PREFIX = '/api-v1-sync';
 const API_TOKEN = 'PcUfmcinux7pZGot0Ex6wJYPjWRk7EexgAXeSgqB4JXxJthGX9W2Sb1TEOa0';
 
 export async function createGoLivriOrder(orderData) {
-    console.log("%c[Sync v1.2.4] Switching to JSON Payload Mode...", "color: white; background: #06b6d4; padding: 4px; font-weight: bold;");
+    console.log("%c[Sync v1.2.5] Hybrid JSON Mode (URL + Body Token)...", "color: white; background: #ec4899; padding: 4px; font-weight: bold;");
 
     try {
         const wilayaCode = orderData.wilaya;
         const wilayaName = orderData.wilayaName || ALGERIA_REGIONS[wilayaCode]?.name || wilayaCode;
         const cleanAmount = Math.round(orderData.total);
 
-        // JSON Payload based on server expectation for 'application/json'
         const payload = {
             api_token: API_TOKEN,
             nom_client: orderData.fullName,
@@ -29,10 +28,10 @@ export async function createGoLivriOrder(orderData) {
             prepared_by: 'Ha-Design App'
         };
 
-        // Use absolute path from window origin to prevent 404 on /admin
-        const fetchUrl = `${window.location.origin}${API_PROXY_PREFIX}/add_colis`;
+        // Important: Many Ecotrack/Windev APIs require the token in the URL QUERY even for POST
+        const fetchUrl = `${window.location.origin}${API_PROXY_PREFIX}/add_colis?api_token=${API_TOKEN}`;
 
-        console.log("📤 POSTing JSON to:", fetchUrl);
+        console.log("📤 POSTing to:", fetchUrl);
 
         const response = await fetch(fetchUrl, {
             method: 'POST',
