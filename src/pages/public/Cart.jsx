@@ -10,7 +10,7 @@ import { collection, addDoc, updateDoc, serverTimestamp } from 'firebase/firesto
 import { db } from '../../services/firebase/config';
 import { createGoLivriOrder } from '../../services/delivery/golivriService';
 
-console.log("%c[Ha-Design App v1.2.6 - Deep Shotgun Sync]", "color: white; background: #8b5cf6; padding: 4px; border-radius: 4px; font-weight: bold;");
+console.log("%c[Ha-Design App v1.2.7 - Mode: Extreme Auth Shotgun]", "color: white; background: #e11d48; padding: 4px; border-radius: 4px; font-weight: bold;");
 
 export function Cart() {
     const { cart, removeFromCart, updateQuantity, cartTotal, clearCart } = useCart();
