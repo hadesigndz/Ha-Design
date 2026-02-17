@@ -172,7 +172,8 @@ export function AdminDashboard() {
                 fetchOrders();
                 if (selectedOrder) setSelectedOrder({ ...selectedOrder, deliveryTracking: code, status: 'confirmed' });
             } else {
-                alert(`FAIL: Sync returned no tracking code. Check console.`);
+                const errorDetail = result?.message || result?.error || JSON.stringify(result);
+                alert(`FAIL: ${errorDetail}`);
             }
         } catch (err) {
             alert(`ERROR: ${err.message}`);
