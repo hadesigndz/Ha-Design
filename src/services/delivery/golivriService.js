@@ -1,28 +1,26 @@
 import { ALGERIA_REGIONS } from '../../utils/algeriaData';
 
-// FINAL RELIABLE PROXY PATH v1.2.9
+// FINAL v1.3.0 - GoLivri / ProColis Standard Implementation
 const API_PROXY_PREFIX = '/api-v1-sync';
-const API_TOKEN = 'PcUfmcinux7pZGot0Ex6wJYPjWRk7EexgAXeSgqB4JXxJthGX9W2Sb1TEOa0';
+const API_KEY = 'PcUfmcinux7pZGot0Ex6wJYPjWRk7EexgAXeSgqB4JXxJthGX9W2Sb1TEOa0';
 
 export async function createGoLivriOrder(orderData) {
-    console.log("%c[Sync v1.2.9] Absolute Triple-Auth Mode...", "color: white; background: #000; padding: 4px; font-weight: bold; border: 1px solid gold;");
+    console.log("%c[Sync v1.3.0] GoLivri Standard Mode Enabled", "color: white; background: #2563eb; padding: 4px; font-weight: bold;");
 
     try {
         const wilayaCode = String(orderData.wilaya).padStart(2, '0');
         const wilayaName = orderData.wilayaName || ALGERIA_REGIONS[wilayaCode]?.name || wilayaCode;
         const cleanAmount = Math.round(orderData.total);
 
-        // Formatted Phone (Strict 10 digits)
         let cleanPhone = String(orderData.phone).replace(/\D/g, '');
         if (cleanPhone.length === 9) cleanPhone = '0' + cleanPhone;
 
         const payload = {
-            api_token: API_TOKEN, // Keep inside JSON too
+            api_token: API_KEY, // Body Token
             nom_client: orderData.fullName,
             telephone: cleanPhone,
             adresse: `${orderData.address}, ${orderData.commune}`,
             code_wilaya: wilayaCode,
-            wilaya: wilayaName,
             commune: orderData.commune,
             montant: cleanAmount,
             produit: orderData.items.map(i => `${i.name} x${i.quantity}`).join(', '),
@@ -31,20 +29,19 @@ export async function createGoLivriOrder(orderData) {
             stop_desk: '0'
         };
 
-        // URL construction with token
-        const fetchUrl = `${window.location.origin}${API_PROXY_PREFIX}/add_colis?api_token=${API_TOKEN}`;
+        // Standard Ecotrack api_create endpoint
+        const fetchUrl = `${window.location.origin}${API_PROXY_PREFIX}/api_create`;
 
-        console.log("📤 POSTing with Triple-Auth to:", fetchUrl);
+        console.log("📤 POSTing to:", fetchUrl);
 
         const response = await fetch(fetchUrl, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json',
-                // TRIPLE HEADER SHOTGUN (The likely fix for S2 error)
-                'api-token': API_TOKEN,
-                'Token': API_TOKEN,
-                'api_token': API_TOKEN
+                // THE SECRET: some Ecotrack S2 systems look for 'token' or 'api-token' in headers
+                'token': API_KEY,
+                'api-token': API_KEY
             },
             body: JSON.stringify(payload)
         });
@@ -52,16 +49,14 @@ export async function createGoLivriOrder(orderData) {
         const rawText = await response.text();
         console.log("📥 Raw API Output:", rawText);
 
-        if (!response.ok) {
-            throw new Error(`HTTP ${response.status}: ${rawText}`);
-        }
+        if (!response.ok) throw new Error(`HTTP ${response.status}: ${rawText}`);
 
         const result = JSON.parse(rawText);
         console.log("✅ Sync Result:", result);
         return result;
 
     } catch (error) {
-        console.error("❌ Sync Fatal:", error);
+        console.error("❌ Sync Fatal Error:", error);
         return { success: false, error: error.message };
     }
 }
