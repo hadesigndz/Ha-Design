@@ -4,6 +4,7 @@ import { Navbar } from './components/layout/Navbar';
 import { Footer } from './components/layout/Footer';
 import { CartProvider } from './context/CartContext';
 import { useLocation } from 'react-router-dom';
+import { LanguageProvider, useLanguage } from './context/LanguageContext';
 
 // Eagerly load the most critical pages
 import { Home } from './pages/public/Home';
@@ -16,15 +17,17 @@ const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard').then(m 
 const AdminLogin = lazy(() => import('./pages/admin/AdminLogin').then(m => ({ default: m.AdminLogin })));
 
 function LoadingFallback() {
+  const { t } = useLanguage();
   return (
     <div className="h-screen flex items-center justify-center">
       <div className="flex flex-col items-center gap-4">
         <div className="w-10 h-10 border-4 border-primary-200 border-t-primary-400 rounded-full animate-spin" />
-        <p className="text-sm font-bold text-slate-400 uppercase tracking-widest">Loading...</p>
+        <p className="text-sm font-bold text-slate-400 uppercase tracking-widest">{t('common.loading')}</p>
       </div>
     </div>
   );
 }
+
 
 function AppContent() {
   const location = useLocation();
@@ -54,9 +57,11 @@ function AppContent() {
 function App() {
   return (
     <Router>
-      <CartProvider>
-        <AppContent />
-      </CartProvider>
+      <LanguageProvider>
+        <CartProvider>
+          <AppContent />
+        </CartProvider>
+      </LanguageProvider>
     </Router>
   );
 }

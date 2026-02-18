@@ -5,7 +5,7 @@
 # Standard ProColis/Ecotrack Proxy
 [[redirects]]
   from = "/api-v1-sync/*"
-  to = "https://procolis.com/api_v1/:splat"
+  to = "https://golivri.ecotrack.dz/api/v1/:splat"
   status = 200
   force = true
 

@@ -1,15 +1,18 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { ShoppingBag, User, Menu, X } from 'lucide-react';
+import { ShoppingBag, User, Menu, X, Globe } from 'lucide-react';
 import { Button } from '../common/Button';
 import { useCart } from '../../context/CartContext';
+import { useLanguage } from '../../context/LanguageContext';
 import { AnimatePresence, motion } from 'framer-motion';
 
 export function Navbar() {
     const [isScrolled, setIsScrolled] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const [isLangMenuOpen, setIsLangMenuOpen] = useState(false);
     const location = useLocation();
     const { cartCount } = useCart();
+    const { lang, setLang, t } = useLanguage();
 
     useEffect(() => {
         const handleScroll = () => {
@@ -20,13 +23,19 @@ export function Navbar() {
     }, []);
 
     const navLinks = [
-        { name: 'Home', path: '/' },
-        { name: 'Collections', path: '/products' },
+        { name: t('navbar.home'), path: '/' },
+        { name: t('navbar.collection'), path: '/products' },
+    ];
+
+    const languages = [
+        { code: 'ar', label: 'العربية', flag: 'DZ' },
+        { code: 'fr', label: 'Français', flag: 'FR' },
+        { code: 'en', label: 'English', flag: 'US' },
     ];
 
     return (
         <nav
-            className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled || isMobileMenuOpen ? 'bg-white shadow-sm py-3' : 'bg-transparent py-5'
+            className={`fixed top-0 left-0 right-0 z-[100] transition-all duration-300 ${isScrolled || isMobileMenuOpen ? 'bg-white shadow-sm py-3' : 'bg-transparent py-5'
                 }`}
         >
             <div className="container mx-auto px-4 md:px-6">
@@ -47,10 +56,10 @@ export function Navbar() {
                     </Link>
 
                     {/* Desktop Nav */}
-                    <div className="hidden md:flex items-center space-x-10">
+                    <div className="hidden md:flex items-center gap-10">
                         {navLinks.map((link) => (
                             <Link
-                                key={link.name}
+                                key={link.path}
                                 to={link.path}
                                 className={`text-sm font-black uppercase tracking-widest transition-all relative group ${location.pathname === link.path
                                     ? 'text-primary-400'
@@ -63,8 +72,41 @@ export function Navbar() {
                         ))}
                     </div>
 
-                    {/* Icons */}
-                    <div className="hidden md:flex items-center space-x-6">
+                    {/* Icons & Lang */}
+                    <div className="hidden md:flex items-center gap-6">
+                        {/* Language Switcher */}
+                        <div className="relative">
+                            <button
+                                onClick={() => setIsLangMenuOpen(!isLangMenuOpen)}
+                                className="flex items-center gap-2 p-2 hover:bg-slate-50 rounded-xl transition-all font-black text-[10px] uppercase tracking-widest text-slate-700"
+                            >
+                                <Globe size={18} className="text-primary-400" />
+                                {languages.find(l => l.code === lang)?.label}
+                            </button>
+
+                            <AnimatePresence>
+                                {isLangMenuOpen && (
+                                    <motion.div
+                                        initial={{ opacity: 0, y: 10 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        exit={{ opacity: 0, y: 10 }}
+                                        className="absolute top-full mt-2 right-0 bg-white shadow-2xl rounded-2xl p-2 border border-slate-50 min-w-[140px]"
+                                    >
+                                        {languages.map((l) => (
+                                            <button
+                                                key={l.code}
+                                                onClick={() => { setLang(l.code); setIsLangMenuOpen(false); }}
+                                                className={`w-full text-start px-4 py-3 rounded-xl text-xs font-black transition-all flex items-center justify-between ${lang === l.code ? 'bg-primary-50 text-primary-500' : 'text-slate-600 hover:bg-slate-50'}`}
+                                            >
+                                                {l.label}
+                                                {lang === l.code && <div className="w-1.5 h-1.5 rounded-full bg-primary-400" />}
+                                            </button>
+                                        ))}
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+                        </div>
+
                         <Link to="/admin" className="transition-all hover:text-primary-400 text-slate-900 hover:scale-110">
                             <User size={22} />
                         </Link>
@@ -80,6 +122,12 @@ export function Navbar() {
 
                     {/* Mobile Controls */}
                     <div className="flex items-center gap-2 md:hidden">
+                        <button
+                            onClick={() => setIsLangMenuOpen(!isLangMenuOpen)}
+                            className="p-2 text-slate-900"
+                        >
+                            <Globe size={24} />
+                        </button>
                         <Link to="/cart" className="relative p-2 text-slate-900 group">
                             <ShoppingBag size={24} />
                             {cartCount > 0 && (
@@ -98,6 +146,36 @@ export function Navbar() {
                 </div>
             </div>
 
+            {/* Language Drawer for Mobile */}
+            <AnimatePresence>
+                {isLangMenuOpen && (
+                    <div className="md:hidden fixed inset-0 z-[110] bg-black/60 backdrop-blur-sm flex items-end">
+                        <motion.div
+                            initial={{ y: '100%' }}
+                            animate={{ y: 0 }}
+                            exit={{ y: '100%' }}
+                            className="w-full bg-white rounded-t-[3rem] p-10 pb-16"
+                        >
+                            <div className="flex justify-between items-center mb-8">
+                                <h3 className="font-black uppercase tracking-widest text-sm text-slate-400">{t('common.selectLanguage')}</h3>
+                                <button onClick={() => setIsLangMenuOpen(false)}><X size={24} /></button>
+                            </div>
+                            <div className="space-y-4">
+                                {languages.map((l) => (
+                                    <button
+                                        key={l.code}
+                                        onClick={() => { setLang(l.code); setIsLangMenuOpen(false); }}
+                                        className={`w-full py-6 rounded-3xl text-xl font-black transition-all border-2 ${lang === l.code ? 'border-primary-400 bg-primary-50 text-primary-500' : 'border-slate-50 text-slate-900'}`}
+                                    >
+                                        {l.label}
+                                    </button>
+                                ))}
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
+
             {/* Mobile Menu Overlay */}
             <AnimatePresence>
                 {isMobileMenuOpen && (
@@ -111,7 +189,7 @@ export function Navbar() {
                         <div className="flex-grow space-y-8 mt-10">
                             {navLinks.map((link, i) => (
                                 <motion.div
-                                    key={link.name}
+                                    key={link.path}
                                     initial={{ opacity: 0, x: 20 }}
                                     animate={{ opacity: 1, x: 0 }}
                                     transition={{ delay: i * 0.1 }}
@@ -133,11 +211,11 @@ export function Navbar() {
                         <div className="space-y-4 pt-10 border-t border-slate-50">
                             <Link to="/admin" onClick={() => setIsMobileMenuOpen(false)}>
                                 <Button className="w-full py-5 bg-slate-50 text-slate-800 border-none hover:bg-slate-100 flex items-center justify-center gap-3 font-black uppercase tracking-widest text-xs" variant="secondary">
-                                    <User size={20} /> Management Portal
+                                    <User size={20} /> {t('navbar.admin')}
                                 </Button>
                             </Link>
                             <div className="text-center">
-                                <p className="text-xs font-black text-slate-300 uppercase tracking-[0.3em]">Ha-Design Premium Art</p>
+                                <p className="text-xs font-black text-slate-300 uppercase tracking-[0.3em]">{t('home.premiumArt')}</p>
                             </div>
                         </div>
                     </motion.div>
@@ -146,3 +224,4 @@ export function Navbar() {
         </nav>
     );
 }
+

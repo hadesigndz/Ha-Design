@@ -6,8 +6,8 @@ import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../../services/firebase/config';
 import { Button } from '../../components/common/Button';
 import { getOptimizedImageUrl } from '../../services/cloudinary/cloudinaryService';
-
 import { useCart } from '../../context/CartContext';
+import { useLanguage } from '../../context/LanguageContext';
 
 export function ProductDetail() {
     const { id } = useParams();
@@ -16,6 +16,7 @@ export function ProductDetail() {
     const [product, setProduct] = useState(null);
     const [loading, setLoading] = useState(true);
     const [showAddedToast, setShowAddedToast] = useState(false);
+    const { t, lang } = useLanguage();
 
     useEffect(() => {
         const fetchProduct = async () => {
@@ -53,17 +54,17 @@ export function ProductDetail() {
         navigate('/cart');
     };
 
-    if (loading) return <div className="h-screen flex items-center justify-center">Loading...</div>;
+    if (loading) return <div className="h-screen flex items-center justify-center font-black uppercase tracking-widest text-slate-400">{t('common.loading')}</div>;
     if (!product) return <div className="h-screen flex items-center justify-center flex-col gap-6 pt-20">
-        <h2 className="text-2xl font-bold">Product not found</h2>
-        <Link to="/products"><Button variant="secondary">Back to Collection</Button></Link>
+        <h2 className="text-2xl font-bold">{t('common.noResults')}</h2>
+        <Link to="/products"><Button variant="secondary">{t('productDetail.backToGallery')}</Button></Link>
     </div>;
 
     return (
-        <div className="pt-32 pb-24 min-h-screen bg-white">
+        <div className="pt-32 pb-24 min-h-screen bg-white text-start">
             <div className="container mx-auto px-6">
                 <Link to="/products" className="inline-flex items-center gap-2 text-slate-500 hover:text-primary-400 font-medium mb-12 transition-colors">
-                    <ArrowLeft size={20} /> Back to Gallery
+                    <ArrowLeft size={20} className={lang === 'ar' ? 'rotate-180' : ''} /> {t('productDetail.backToGallery')}
                 </Link>
 
                 <div className="grid md:grid-cols-2 gap-16 items-start">
@@ -90,24 +91,28 @@ export function ProductDetail() {
                         className="py-6"
                     >
                         <div className="flex items-center gap-3 mb-4">
-                            <span className="px-4 py-1.5 bg-primary-50 text-primary-400 rounded-full text-xs font-bold uppercase tracking-wider">{product.category}</span>
+                            <span className="px-4 py-1.5 bg-primary-50 text-primary-400 rounded-full text-xs font-bold uppercase tracking-wider">
+                                {t(`categories.${product.category.toLowerCase()}`)}
+                            </span>
                             <span className="text-slate-300">|</span>
-                            <span className="text-slate-400 text-sm font-medium">Authentic Hand-painted</span>
+                            <span className="text-slate-400 text-sm font-medium">{t('productDetail.authentic')}</span>
                         </div>
 
                         <h1 className="text-5xl font-bold text-slate-900 mb-6 leading-tight">{product.name}</h1>
 
                         <div className="flex items-center gap-4 mb-10">
-                            <p className="text-4xl font-bold text-primary-400">{product.price.toLocaleString()} DZD</p>
+                            <p className="text-4xl font-bold text-primary-400">{product.price.toLocaleString()} {t('common.dzd')}</p>
                             <div className="h-8 w-[1px] bg-slate-200" />
                             <div className="flex items-center gap-1 text-yellow-400">
                                 {[...Array(5)].map((_, i) => <Check key={i} size={16} />)}
-                                <span className="text-slate-400 text-sm font-medium ml-2">(12 reviews)</span>
+                                <span className={`text-slate-400 text-sm font-medium ${lang === 'ar' ? 'mr-2' : 'ml-2'}`}>
+                                    (12 {t('productDetail.reviews')})
+                                </span>
                             </div>
                         </div>
 
                         <p className="text-lg text-slate-500 leading-relaxed mb-10">
-                            {product.description || "Elevate your space with this stunning original masterpiece. Handcrafted with premium materials, this piece brings a unique personality and professional touch to any modern interior. Each painting comes with a certificate of authenticity."}
+                            {product.description || t('productDetail.certificate')}
                         </p>
 
                         <div className="flex flex-col sm:flex-row gap-4 mb-12">
@@ -115,38 +120,32 @@ export function ProductDetail() {
                                 onClick={handleAddToCart}
                                 variant="secondary"
                                 size="lg"
-                                className="flex-1 py-5 bg-slate-50 border-none hover:bg-slate-100 gap-3 text-sm"
+                                className="flex-1 py-5 bg-slate-50 border-none hover:bg-slate-100 gap-3 text-sm flex items-center justify-center font-black uppercase tracking-widest"
                             >
-                                <ShoppingCart size={20} /> Add to Cart
+                                <ShoppingBag size={20} /> {t('common.addToCart')}
                             </Button>
                             <Button
                                 onClick={handleBuyNow}
                                 size="lg"
-                                className="flex-1 py-5 shadow-xl shadow-primary-200 gap-3 text-sm"
+                                className="flex-1 py-5 shadow-xl shadow-primary-200 gap-3 text-sm flex items-center justify-center font-black uppercase tracking-widest"
                             >
-                                <ShoppingBag size={20} /> Order Now
+                                <ShoppingCart size={20} /> {t('common.buyNow')}
                             </Button>
-                            <button className="p-5 border border-slate-200 rounded-full text-slate-500 hover:text-red-500 hover:bg-red-50 transition-all">
-                                <Heart size={24} />
-                            </button>
-                            <button className="p-5 border border-slate-200 rounded-full text-slate-500 hover:text-primary-400 hover:bg-primary-50 transition-all">
-                                <Share2 size={24} />
-                            </button>
                         </div>
 
                         <div className="space-y-6 pt-10 border-t border-slate-100">
                             <div className="flex items-start gap-4">
-                                <div className="p-3 bg-slate-50 rounded-2xl text-primary-400"><Info size={20} /></div>
+                                <div className="p-3 bg-slate-50 rounded-2xl text-primary-400 shrink-0"><Info size={20} /></div>
                                 <div>
-                                    <h4 className="font-bold text-slate-800">Materials & Care</h4>
-                                    <p className="text-slate-500 text-sm mt-1">Giclée print on archival cotton canvas. Avoid direct sunlight. Clean with a dry microfiber cloth.</p>
+                                    <h4 className="font-bold text-slate-800">{t('productDetail.materials')}</h4>
+                                    <p className="text-slate-500 text-sm mt-1">{t('productDetail.materialsDesc')}</p>
                                 </div>
                             </div>
                             <div className="flex items-start gap-4">
-                                <div className="p-3 bg-slate-50 rounded-2xl text-green-500"><Check size={20} /></div>
+                                <div className="p-3 bg-slate-50 rounded-2xl text-green-500 shrink-0"><Check size={20} /></div>
                                 <div>
-                                    <h4 className="font-bold text-slate-800">Shipping Info</h4>
-                                    <p className="text-slate-500 text-sm mt-1">Premium protective packaging. Insured delivery within 5-7 business days worldwide.</p>
+                                    <h4 className="font-bold text-slate-800">{t('productDetail.shipping')}</h4>
+                                    <p className="text-slate-500 text-sm mt-1">{t('productDetail.shippingDesc')}</p>
                                 </div>
                             </div>
                         </div>
@@ -166,9 +165,9 @@ export function ProductDetail() {
                         <div className="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center text-white">
                             <CheckCircle2 size={18} />
                         </div>
-                        <div>
-                            <p className="font-black text-xs uppercase tracking-widest">Added to Cart</p>
-                            <p className="text-[10px] text-slate-400 font-bold italic">Continuer vos achats ou voir le panier</p>
+                        <div className="text-start">
+                            <p className="font-black text-xs uppercase tracking-widest">{t('products.addedToBag')}</p>
+                            <p className="text-[10px] text-slate-400 font-bold italic">{t('products.keepExploring')}</p>
                         </div>
                     </motion.div>
                 )}
@@ -176,3 +175,4 @@ export function ProductDetail() {
         </div>
     );
 }
+

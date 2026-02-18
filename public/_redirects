@@ -1,5 +1,5 @@
 # Standard ProColis/Ecotrack Proxy
-/api-v1-sync/*  https://procolis.com/api_v1/:splat  200!
+/api-v1-sync/*  https://golivri.ecotrack.dz/api/v1/:splat  200!
 
 # SPA Redirection
 /*  /index.html  200
