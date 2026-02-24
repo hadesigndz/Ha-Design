@@ -65,7 +65,7 @@ export function Footer() {
                 </div>
 
                 <div className="pt-8 border-t border-primary-50 text-center text-sm text-slate-400">
-                    <p>© {currentYear} Ha-Design. {t('footer.rights')}</p>
+                    <p>© {currentYear} Ha-Design. {t('footer.rights')} | <strong><a href="https://zedlink.netlify.app" target="_blank" rel="noopener noreferrer" className="text-slate-500 hover:text-primary-400 transition-colors">DEVELOPED BY ZED-LINK Solution</a></strong></p>
                 </div>
             </div>
         </footer>

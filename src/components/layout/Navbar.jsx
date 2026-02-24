@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { ShoppingBag, User, Menu, X, Globe } from 'lucide-react';
-import { Button } from '../common/Button';
+import { ShoppingBag, Menu, X, Globe } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -107,9 +106,7 @@ export function Navbar() {
                             </AnimatePresence>
                         </div>
 
-                        <Link to="/admin" className="transition-all hover:text-primary-400 text-slate-900 hover:scale-110">
-                            <User size={22} />
-                        </Link>
+
                         <Link to="/cart" className="relative group p-2">
                             <ShoppingBag size={24} className="transition-all group-hover:text-primary-400 text-slate-900 group-hover:scale-110" />
                             {cartCount > 0 && (
@@ -209,11 +206,6 @@ export function Navbar() {
                         </div>
 
                         <div className="space-y-4 pt-10 border-t border-slate-50">
-                            <Link to="/admin" onClick={() => setIsMobileMenuOpen(false)}>
-                                <Button className="w-full py-5 bg-slate-50 text-slate-800 border-none hover:bg-slate-100 flex items-center justify-center gap-3 font-black uppercase tracking-widest text-xs" variant="secondary">
-                                    <User size={20} /> {t('navbar.admin')}
-                                </Button>
-                            </Link>
                             <div className="text-center">
                                 <p className="text-xs font-black text-slate-300 uppercase tracking-[0.3em]">{t('home.premiumArt')}</p>
                             </div>
