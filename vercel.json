@@ -1,0 +1,12 @@
+{
+    "rewrites": [
+        {
+            "source": "/api-v1-sync/:path*",
+            "destination": "https://golivri.ecotrack.dz/api/v1/:path*"
+        },
+        {
+            "source": "/(.*)",
+            "destination": "/index.html"
+        }
+    ]
+}

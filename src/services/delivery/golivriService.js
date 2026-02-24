@@ -70,7 +70,7 @@ export async function createGoLivriOrder(orderData) {
         console.log("📦 Prepared Payload:", payload);
 
         // 3. Execute Request
-        // Using the proxy defined in vite.config.js / netlify.toml
+        // Using the proxy defined in vite.config.js / vercel.json
         // We append the token to the URL as well to prevent "Clé non détectée" errors
         const endpoint = `${window.location.origin}${API_PROXY_PREFIX}/create/order?token=${AUTH_TOKEN}`;
 
